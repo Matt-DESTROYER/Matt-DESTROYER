@@ -1,4 +1,4 @@
 - 👋 Hi, I’m @Matt-DESTROYER
 - 👀 I’m interested in coding in general :).
-- 🌱 I’m currently learning Visual Basic, C++, C#, JavaScript
+- 🌱 I’m currently learning or have experience with Visual Basic, C++, C#, Java, Python, JavaScript
 - 📫 Reach me at: mattdestroyerpro@gmail.com
