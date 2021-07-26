@@ -1,3 +1,3 @@
 - 👋 Hi, I’m @Matt-DESTROYER
-- 🌱 I’m currently learning/experience with Visual Basic, C++, C#, Java, Python, JavaScript
+- 🌱 I’m currently learning/experience with JavaScript, C++, Shaders, C#, Visual C#, Unity C#, Java, Python and Visual Basic.
 - 📫 Reach me at: mattdestroyerpro@gmail.com
