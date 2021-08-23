@@ -1,4 +1,3 @@
 - 👋 Hi, I’m @Matt-DESTROYER
-- I’m currently learning/experienced with JavaScript, C++, Shaders, C#, Visual C#, Unity C#, Java, Python and Visual Basic.
-- (Some of my repositories are 'outdated' or 'old', meaning they were made when I was new to programming and I may or may not replace them with improved versions later)
+- I’m currently learning/experienced with JavaScript, Python, C++, C# (including Visual C# and Unity C#), Visual Basic, Java and Shaders.
 - 📫 Reach me at: mattdestroyerpro@gmail.com
