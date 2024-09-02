@@ -35,11 +35,8 @@ app.get("/Contact", function(req, res) {
 });
 
 app.use(function(req, res) {
-	console.log(req);
-	console.log(res);
 	res.status(404);
-	res.send(JSON.stringify(req));
-	//res.sendFile(join(__dirname, "/public/404.html"));
+	res.sendFile(join(__dirname, "/public/404.html"));
 });
 
 (function initSocketio() {
@@ -62,3 +59,5 @@ app.use(function(req, res) {
 })();
 
 server.listen(process.env.PORT || 3000);
+
+module.exports = server;
