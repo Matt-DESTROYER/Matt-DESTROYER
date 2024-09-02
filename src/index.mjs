@@ -14,25 +14,32 @@ const __dirname = dirname(__filename);
 app.use(express.static(join(__dirname, "public")));
 
 app.get(["/", "/Home"], function(req, res) {
-	res.status(200);
-	res.sendFile(join(__dirname, "/public/home.html"));
+	res
+		.status(200)
+		.sendFile(join(__dirname, "/public/home.html"));
 });
 app.get("/Projects", function(req, res) {
-	res.status(200);
-	res.sendFile(join(__dirname, "/public/projects.html"));
+	res
+		.status(200)
+		.sendFile(join(__dirname, "/public/projects.html"));
 });
 app.get("/About", function(req, res) {
-	res.status(200);
-	res.sendFile(join(__dirname, "/public/about.html"));
+	res
+		.status(200)
+		.sendFile(join(__dirname, "/public/about.html"));
 });
 app.get("/Contact", function(req, res) {
-	res.status(200);
-	res.sendFile(join(__dirname, "/public/contact.html"));
+	res
+		.status(200)
+		.sendFile(join(__dirname, "/public/contact.html"));
 });
 
 app.use(function(req, res) {
+	console.log(req);
+	console.log(res);
 	res.status(404);
-	res.sendFile(join(__dirname, "/public/404.html"));
+	res.send(JSON.stringify(req));
+	//res.sendFile(join(__dirname, "/public/404.html"));
 });
 
 (function initSocketio() {
