@@ -7,42 +7,46 @@ const io = new Server(server);
 
 // get __dirname
 import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-app.use(express.static("public"));
+app.use(express.static(join(__dirname, "public")));
 
 app.get(["/", "/Home"], function(req, res) {
 	res.status(200);
-	res.sendFile(__dirname + "/public/home.html");
+	res.sendFile(join(__dirname, "/public/home.html"));
 });
 app.get("/Projects", function(req, res) {
 	res.status(200);
-	res.sendFile(__dirname + "/public/projects.html");
+	res.sendFile(join(__dirname, "/public/projects.html"));
 });
 app.get("/About", function(req, res) {
 	res.status(200);
-	res.sendFile(__dirname + "/public/about.html");
+	res.sendFile(join(__dirname, "/public/about.html"));
 });
 app.get("/Contact", function(req, res) {
 	res.status(200);
-	res.sendFile(__dirname + "/public/contact.html");
+	res.sendFile(join(__dirname, "/public/contact.html"));
 });
 
-app.get("*", function(req, res) {
+app.use(function(req, res) {
 	res.status(404);
-	res.sendFile(__dirname + "/public/404.html");
+	res.sendFile(join(__dirname, "/public/404.html"));
 });
 
-(function intSocketio() {
+(function initSocketio() {
 	let usersConnected = 0;
+
 	io.on("connection", function(socket) {
 		usersConnected++;
+
 		io.emit("count", usersConnected);
+
 		socket.on("count", function() {
 			io.emit("count", usersConnected);
 		});
+
 		socket.on("disconnect", function() {
 			usersConnected--;
 			io.emit("count", usersConnected);
