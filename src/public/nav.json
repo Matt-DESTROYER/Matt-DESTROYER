@@ -1,0 +1,20 @@
+{
+	"pages": [
+		{
+			"name": "Home",
+			"url": "./Home"
+		},
+		{
+			"name": "About",
+			"url": "./About"
+		},
+		{
+			"name": "Projects",
+			"url": "./Projects"
+		},
+		{
+			"name": "Contact",
+			"url": "./Contact"
+		}
+	]
+}

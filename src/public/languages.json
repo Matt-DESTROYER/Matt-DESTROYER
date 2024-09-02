@@ -1,0 +1,48 @@
+{
+	"all": [
+		{
+			"name": "NodeJS",
+			"proficiency": "Intermediate-Advanced"
+		},
+		{
+			"name": "CS",
+			"proficiency": "Intermediate"
+		},
+		{
+			"name": "C++",
+			"proficiency": "Beginner-Intermediate"
+		},
+		{
+			"name": "Java",
+			"proficiency": "Beginner"
+		},
+		{
+			"name": "Visual Basic",
+			"proficiency": "Intermediate"
+		},
+		{
+			"name": "HTML",
+			"proficiency": "Intermediate"
+		},
+		{
+			"name": "CSS",
+			"proficiency": "Intermediate"
+		},
+		{
+			"name": "JavaScript",
+			"proficiency": "Advanced"
+		},
+		{
+			"name": "Python",
+			"proficiency": "Intermediate"
+		},
+		{
+			"name": "English",
+			"proficiency": "Advanced"
+		},
+		{
+			"name": "Japanese",
+			"proficiency": "Beginner-Intermediate"
+		}
+	]
+}

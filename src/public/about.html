@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+
+<head>
+	<meta http-equiv="content-language" content="en-AU">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width">
+	<meta name="author" content="Matthew James">
+	<meta name="copyright" content="Matthew James">
+	<meta name="description" content="My (Matthew James') first ever portfolio site!">
+	<meta name="keyword" content="replit, programming, portfolio, Matthew, James">
+	<meta name="revised" content="Sunday, January 8th, 2023, 12:54 pm">
+	<meta property="og:title" content="My Portfolio Site - Matthew James" />
+	<meta property="og:og:description" content="My (Matthew James') first ever portfolio site!"/>
+	<title>About me</title>
+	<link rel="icon" type="image/png" href="./Images/logo.png" />
+	<link rel="stylesheet" type="text/css" href="./Styles/Theme.css" />
+	<script type="text/javascript" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+	<script type="text/javascript"> const socket = io(); </script>
+</head>
+
+<body>
+	<main>
+		<h1>About me</h1>
+		<p>
+			Hi there!
+			I'm Matthew (but you can call me Matt).
+			I'm a 17 year old, Australian, full-stack developer with a few years of experience programming.
+			JavaScript was my first ever language, and remains my most proficient language, but my favourite language is C#.
+			(I also have a somewhat irrational dislike of Python because of it's 'lazy' syntax, but it's growing on me...)
+		</p>
+		<br>
+		<h2>My Languages</h2>
+		<p>Here is a list of the languages I know/have used and my proficiency in each one (note this is a subjective measurement).</p>
+		<ul id="languages"></ul>
+		<br>
+		<h2>My Projects</h2>
+		<p>These are my top projects which demonstrate my skills and abilities.</p>
+		<div id="projects"></div>
+	</main>
+	<script type="module">
+		import header from "./Modules/header.js";
+		import footer from "./Modules/footer.js";
+		document.body.prepend(header());
+		document.body.append(footer());
+		(function initLanguages() {
+			const languagesList = document.getElementById("languages");
+			fetch("./languages.json")
+				.then(function (res) { return res.json(); })
+				.then(function(languages) {
+					for (let i = 0; i < languages.all.length; i++) {
+						const lang = document.createElement("li");
+						const img = document.createElement("img");
+						img.classList.add("language-icon");
+						img.setAttribute("title", languages.all[i].name);
+						img.setAttribute("src", "./Images/" + languages.all[i].name + ".png");
+						lang.append(img);
+						const text = document.createElement("span");
+						text.textContent = "Proficiency: " + languages.all[i].proficiency;
+						lang.append(text);
+						languagesList.append(lang);
+					}
+				});
+		})();
+		(function initProjects() {
+			const projectsDiv = document.getElementById("projects");
+			fetch("./projects.json")
+				.then(function(res) { return res.json(); })
+				.then(function(projects) {
+					for (const project of projects.top) {
+						const div = document.createElement("div");
+						div.classList.add("project");
+						const a = document.createElement("a");
+						a.setAttribute("href", project.url);
+						const title = document.createElement("h2");
+						title.textContent = project.name;
+						a.append(title);
+						const img = document.createElement("img");
+						img.setAttribute("alt", project.name);
+						img.setAttribute("title", project.name);
+						img.setAttribute("width", 250);
+						img.setAttribute("src", project.cover);
+						a.append(img);
+						const description = document.createElement("p");
+						description.textContent = project.description;
+						a.append(description);
+						div.append(a);
+						const language = document.createElement("img");
+						language.classList.add("language-icon");
+						language.setAttribute("title", project.features.language);
+						language.setAttribute("src", "./Images/" + project.features.language + ".png");
+						div.append(language);
+						for (let i = 0; i < project.features.tools.length; i++) {
+							const icon = document.createElement("img");
+							icon.classList.add("tool-icon");
+							icon.setAttribute("title", project.features.tools[i].name);
+							icon.setAttribute("src", "./Images/" + project.features.tools[i].name + ".png");
+							div.append(icon);
+						}
+						projectsDiv.append(div);
+						projectsDiv.append(document.createElement("br"));
+					}
+				})
+				.catch(function(err) { console.info("An unexpected error has occurred:", err); });
+		})();
+	</script>
+	<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="mattdestroyer" data-description="Support me on Buy me a coffee!" data-message="Buy me a coffee?" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+</body>
+
+</html>

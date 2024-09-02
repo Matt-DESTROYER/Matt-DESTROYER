@@ -1,0 +1,123 @@
+{
+	"projects": [
+		{
+			"name": "Noughts & Crosses",
+			"cover": "https://storage.googleapis.com/replit/images/1670885105408_62795679601cba34b367ee3549f7298d.png",
+			"url": "https://replit.com/@MattDESTROYER/Noughts-and-Crosses?v=1",
+			"description": "This is a multiplayer Noughts & Crosses game. Instructions on how to play are in the game. Play Noughts and Crosses with fellow Replers! This program uses Replit Auth to authenticate users with Replit DB (using my EZReplDB package) to store user data (wins, draws, losses and other info on past matches)."
+		},
+		{
+			"name": "My Portfolio Site",
+			"cover": "https://storage.googleapis.com/replit/images/1671076817875_fcc744386f4221702fe0fa4ff716729e.png",
+			"url": "https://replit.com/@MattDESTROYER/MattDESTROYER?v=1",
+			"description": "This is my first ever complete, proper, portfolio site. (Your here right now!)"
+		},
+		{
+			"name": "Skeleton Loading",
+			"cover": "https://storage.googleapis.com/replit/images/1669335381896_b032921078eb7616dbbd83dd84f8fcc4.png",
+			"url": "https://replit.com/@MattDESTROYER/Skeleton-Loading?v=1",
+			"description": "A simple example of skeleton loading. Skeleton loading uses simple placeholder elements while loading actual content, replacing the placeholder or 'skeleton' content with real content when loaded."
+		},
+		{
+			"name": "Intro to JS",
+			"cover": "https://storage.googleapis.com/replit/images/1667183607186_fc0797e7e9ae093f96690458bfc2a0f7.png",
+			"url": "https://replit.com/@MattDESTROYER/Intro-to-JS?v=1",
+			"description": "This Repl was my submission for the 2022 Replit Tutorial Jam. It won third place earning me $250 USD. It's a short, simple, but most importantly, interactive, JavaScript tutorial that goes through the basics of JavaScript."
+		},
+		{
+			"name": "Simple 2D Terrain Generator",
+			"cover": "https://storage.googleapis.com/replit/images/1668122987079_95ac0f2d84288d270a6384a3caf3c4e1.png",
+			"url": "https://replit.com/@MattDESTROYER/Simple-2D-Terrain-Generator?v=1",
+			"description": "This Repl can generate very simple 2D terrain. It randomly generates 2D points to form rough terrain, then uses a cubic equation to connect these points."
+		},
+		{
+			"name": "Authed View Logger",
+			"cover": "https://storage.googleapis.com/replit/images/1664091629459_7b342dac4c10e6e7e01531d9511ef5d5.png",
+			"url": "https://replit.com/@MattDESTROYER/Authed-View-Logger?v=1",
+			"description": "Using the power of PHP, this Repl logs each user (logged in via Repl auth) who views it!"
+		},
+		{
+			"name": "The Solar System",
+			"cover": "https://storage.googleapis.com/replit/images/1662176494561_2becb1ba1751e7abb0dceca10652d26d.png",
+			"url": "https://replit.com/@MattDESTROYER/The-Solar-System?v=1",
+			"description": "Explore the solar system by clicking and dragging to pan and scrolling to zoom. Click on a planet or asteroid and the camera will automatically track it!"
+		},
+		{
+			"name": "Getting Particular",
+			"cover": "https://storage.googleapis.com/replit/images/1660649198775_6c82c4d4bfebc415209c535e02c754f7.png",
+			"url": "https://replit.com/@MattDESTROYER/Getting-Particular?v=1",
+			"description": "A recreation of a common particle effect. Click or tap your screen to add more particles."
+		},
+		{
+			"name": "Interactive Particles",
+			"cover": "https://storage.googleapis.com/replit/images/1657089239360_128e5cfe3068662b279ef0d89199c36c.png",
+			"url": "https://replit.com/@MattDESTROYER/Interactive-Particles?v=1",
+			"description": "A simple, fun, particle animation that works on text and images! (I came across a tutorial that showed text particles like this and watched the start, once I saw it was made by using getImageData I stopped watching and tried to make it myself, which worked out decently well...)"
+		},
+		{
+			"name": "No Budget Flappy Bird",
+			"cover": "https://storage.googleapis.com/replit/images/1654580298998_03c6b16af76805daa83073df84a50a67.png",
+			"url": "https://replit.com/@MattDESTROYER/No-Budget-Flappy-Bird?v=1",
+			"description": "A 'no budget' (in other words not great quality) remake of the classic, arcade-style game: Flappy Bird. Coded from scratch in HTML and JavaScript by me. I also created all the assets as well (don't judge the quality, I'm clearly not a digital artist)."
+		},
+		{
+			"name": "Mastermind",
+			"cover": "https://storage.googleapis.com/replit/images/1654040552896_24457b37910099f69521b9fb37d512d3.png",
+			"url": "https://replit.com/@MattDESTROYER/Mastermind?v=1",
+			"description": "This is a digital clone of the classic board game, Mastermind. One player picks a sequence of (usually) five colours, and the other player has to guess that sequence. The other player only gets a certain number of guesses (ten here), and on each guess, is told if a colour is in the right place or is the right colour but in the wrong place. Note that this version is only single player."
+		},
+		{
+			"name": "Bouncing Particles",
+			"cover": "https://storage.googleapis.com/replit/images/1652998627277_bd54aea623f489aa3ff97bac94dc7dbc.png",
+			"url": "https://replit.com/@MattDESTROYER/Bouncing-Particles?v=1",
+			"description": "A simple, fun (JavaScript) particle animation which reacts with HTML elements with the .bouncy class."
+		},
+		{
+			"name": "Chrome Dinosaur Game",
+			"cover": "https://storage.googleapis.com/replit/images/1638266240342_e34877eb99f6db8a1278b489d98ff058.png",
+			"url": "https://replit.com/@MattDESTROYER/Chrome-Dinosaur-Game?v=1",
+			"description": "A simple recreation of Google Chrome's dinosaur game."
+		},
+		{
+			"name": "Paint for Browser",
+			"cover": "https://storage.googleapis.com/replit/images/1654140634992_bf862c55380e90748500d73864da7150.png",
+			"url": "https://replit.com/@MattDESTROYER/Paint-for-Browser?v=1",
+			"description": "An easy to use paint program that runs in your browser!"
+		}
+	],
+	"top": [
+		{
+			"name": "Noughts & Crosses",
+			"cover": "https://storage.googleapis.com/replit/images/1670885105408_62795679601cba34b367ee3549f7298d.png",
+			"url": "https://replit.com/@MattDESTROYER/Noughts-and-Crosses?v=1",
+			"description": "This is my most recent, large, project. At the time, I had stumbled accross a similar Repl by another user and thought to myself (having newly learnt to use Socket.IO and WebSockets) 'I wanna have a go at making my own multiplayer game!' and I knew this was the perfect place start. In less than a week (I think from memory), I managed to create a fully operational, online multiplayer, Noughts & Crosses game. For this project I used NodeJS, with Express for the server (another thing I had recently picked up and wanted to apply), and WebSockets for realtime server-client communications. I integrated Repl Auth to authenticate users as well as the Replit Database, where user stats are stored. These stats are displayed on the leaderboard page where they are also sorted to create friendly competition. The menu page allows players to search for a room, using WebSockets to display new rooms created in real-time. Once in a room, using WebSockets, the two players moves are communicated to the server which handles everything else and responds to each user with the updated board or alerts them that a user has won. This project showcases my skill as a full-stack developer and also demonstrates my ability to quickly learn something new and apply it to a real context. You can easily imagine how the skills required for a project like this can be applied to much larger contexts.",
+			"features": {
+				"language": "NodeJS",
+				"tools": [
+					{ "name": "Express" },
+					{ "name": "WebSockets" }
+				]
+			}
+		},
+		{
+			"name": "Skeleton Loading",
+			"cover": "https://storage.googleapis.com/replit/images/1669335381896_b032921078eb7616dbbd83dd84f8fcc4.png",
+			"url": "https://replit.com/@MattDESTROYER/Skeleton-Loading?v=1",
+			"description": "Skeleton Loading is a technique used by many very large popular websites such as Facebook. Skeleton Loading involves loading animated placeholder content while real content is being fetched through some form of request. Having recently learnt about Skeleton Loading, I decided to make a simple website to try this out and demonstrate a simple form of Skeleton Loading. Skeleton Loading is a handy skill for both a front-end and full-stack developer, it can be applied to almost any graphical application and has some interesting psychological effects on the perception of load times for users.",
+			"features": {
+				"language": "HTML, CSS & JS",
+				"tools": [ ]
+			}
+		},
+		{
+			"name": "Intro to JS",
+			"cover": "https://storage.googleapis.com/replit/images/1667183607186_fc0797e7e9ae093f96690458bfc2a0f7.png",
+			"url": "https://replit.com/@MattDESTROYER/Intro-to-JS?v=1",
+			"description": "This was a tutorial I developed for Replit's 2022 Tutorial Jam. The only prompt was to create a tutorial using Replit's - then new - tutorial creating system. I won third place overall, winning $250 US with this tutorial: Intro to JS. My JavaScript tutorial can be forked from this Repl on Replit and provides interactive lessons with ways to test and practice your learning and challenges which further push your new (if you have just started learning JavaScript) abilities. I made this tutorial in less than a week (from memory) for this Jam. This is my second project to earn money, my first being a simple template which won a minor prize in phase two of Replit's 2022 Template Jam.",
+			"features": {
+				"language": "HTML, CSS & JS",
+				"tools": [ ]
+			}
+		}
+	]
+}

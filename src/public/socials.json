@@ -1,0 +1,19 @@
+{
+	"platforms": [
+		{
+			"name": "Replit - @MattDESTROYER",
+			"logo": "./Images/replit.webp",
+			"url": "https://replit.com/@MattDESTROYER"
+		},
+		{
+			"name": "Gmail - mattdestroyerpro@gmail.com",
+			"logo": "./Images/gmail.svg",
+			"url": "mailto:mattdestroyerpro@gmail.com"
+		},
+		{
+			"name": "Discord - MattDESTROYER#3743",
+			"logo": "./Images/discord.png",
+			"url": "https://discord.com/app"
+		}
+	]
+}

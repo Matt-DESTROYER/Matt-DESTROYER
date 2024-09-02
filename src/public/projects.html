@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+
+<head>
+	<meta http-equiv="content-language" content="en-AU">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width">
+	<meta name="author" content="Matthew James">
+	<meta name="copyright" content="Matthew James">
+	<meta name="description" content="My (Matthew James') first ever portfolio site!">
+	<meta name="keyword" content="replit, programming, portfolio, Matthew, James">
+	<meta name="revised" content="Sunday, January 8th, 2023, 12:54 pm">
+	<meta property="og:title" content="My Portfolio Site - Matthew James" />
+	<meta property="og:og:description" content="My (Matthew James') first ever portfolio site!"/>
+	<title>My projects</title>
+	<link rel="icon" type="image/png" href="./Images/logo.png" />
+	<link rel="stylesheet" type="text/css" href="./Styles/Theme.css" />
+	<script type="text/javascript" src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+	<script type="text/javascript"> const socket = io(); </script>
+</head>
+
+<body>
+	<main>
+		<h1>My projects</h1>
+		<div id="projects"></div>
+		<script type="text/javascript">
+			(function initProjects() {
+				const projectsDiv = document.getElementById("projects");
+				fetch("./projects.json")
+					.then(function(res) { return res.json(); })
+					.then(function(projects) {
+						for (const project of projects.projects) {
+							const div = document.createElement("div");
+							div.classList.add("project");
+							const a = document.createElement("a");
+							a.setAttribute("href", project.url);
+							const title = document.createElement("h2");
+							title.textContent = project.name;
+							a.append(title);
+							const img = document.createElement("img");
+							img.setAttribute("alt", project.name);
+							img.setAttribute("title", project.name);
+							img.setAttribute("width", 250);
+							img.setAttribute("src", project.cover);
+							a.append(img);
+							const description = document.createElement("p");
+							description.textContent = project.description;
+							a.append(description);
+							div.append(a);
+							projectsDiv.append(div);
+							projectsDiv.append(document.createElement("br"));
+						}
+					})
+					.catch(function() { return; });
+			})();
+		</script>
+	</main>
+	<script type="module">
+		import header from "./Modules/header.js";
+		document.body.prepend(header());
+	</script>
+	<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="mattdestroyer" data-description="Support me on Buy me a coffee!" data-message="Buy me a coffee?" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
+</body>
+
+</html>
