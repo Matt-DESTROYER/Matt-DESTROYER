@@ -1,6 +1,7 @@
-- 👋 Hi, I’m @Matt-DESTROYER (@MattDESTROYER on Replit)
-- I’m currently learning/experienced with JavaScript (and NodeJS), Python, C++, C# (including Visual C# and Unity), Visual Basic, Java and Shaders (WGSL).
-- 📫 Reach me at: mattdestroyerpro@gmail.com
+- 👋 Hi, I'm Matt!
+- I'm an 18 year old Australian student.
+- I am experienced with JavaScript, Python, C.
+- I've messed around with C++, C#, PHP, Java and some others.
 
 [![trophy](https://github-profile-trophy.vercel.app/?username=Matt-DESTROYER)](https://github.com/Matt-DESTROYER)
 [![Most Used Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=Matt-DESTROYER&theme=gruvbox_light)](https://github.com/Matt-DESTROYER)
