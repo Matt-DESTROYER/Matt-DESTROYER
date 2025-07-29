@@ -1,5 +1,5 @@
 - 👋 Hi, I'm Matt!
-- I'm an 18 year old Australian student.
+- I'm a 19 year old Australian student.
 - I am experienced with JavaScript, Python, C.
 - I've messed around with C++, C#, PHP, Java and some others.
 
