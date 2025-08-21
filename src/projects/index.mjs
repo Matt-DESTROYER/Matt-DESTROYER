@@ -1,5 +1,4 @@
-import { config } from "dotenv";
-config();
+const PORT = 3001;
 
 import { createServer } from "node:http";
 import express from "express";
@@ -20,7 +19,7 @@ app.use(express.static(join(__dirname, "static")));
 app.get("/", function(req, res) {
 	res
 		.status(200)
-		.sendFile(join(__dirname, "/public/projects.html"));
+		.sendFile(join(__dirname, "/static/projects.html"));
 });
 
 app.use(function(req, res) {
@@ -47,4 +46,4 @@ app.use(function(req, res) {
 	});
 })();
 
-server.listen(process.env.PORT || 3000);
+server.listen(process.env.PORT || PORT);

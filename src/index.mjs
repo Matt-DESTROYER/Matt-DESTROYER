@@ -1,5 +1,4 @@
-import { config } from "dotenv";
-config();
+const PORT = 3000;
 
 import { createServer } from "node:http";
 import express from "express";
@@ -62,4 +61,5 @@ app.use(function(req, res) {
 	});
 })();
 
-server.listen(process.env.PORT || 3000);
+server.listen(process.env.PORT || PORT);
+
