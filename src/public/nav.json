@@ -2,7 +2,7 @@
 	"pages": [
 		{
 			"name": "Home",
-			"url": "./Home"
+			"url": "./"
 		},
 		{
 			"name": "About",
