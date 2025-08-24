@@ -1,7 +1,7 @@
 Math.TWO_PI = 2 * Math.PI;
 
-import img from "./Modules/Img.js";
-import Orbiter from "./Modules/Orbiter.js";
+import img from "./modules/img.js";
+import Orbiter from "./modules/orbiter.js";
 
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
@@ -49,7 +49,7 @@ const Objects = [];
 	const Stars = {
 		stars: (function(x) {
 			const stars = [];
-			const starImg = img("./Images/Star.png");
+			const starImg = img("./images/star.png");
 			for (let i = 0; i < 360; i += x) {
 				const star = new Orbiter(Math.random() * 1000 + 50, Math.random(), starImg, Origin, Math.random() * Math.random(), Math.random(), "Star", false);
 				if (star.rotSpeed <= 0.1) {
@@ -81,15 +81,15 @@ const Objects = [];
 			}
 		}
 	};
-	const Sun = new Orbiter(0, 80, img("./Images/Sun.png"), Origin, 0, 2, "Sun");
-	const Mercury = new Orbiter(80, 27, img("./Images/Mercury.png"), Sun, 1.27, 1.75, "Mercury");
-	const Venus = new Orbiter(130, 30, img("./Images/Venus.png"), Sun, 1, 1.48, "Venus");
-	const Earth = new Orbiter(200, 25, img("./Images/Earth.png"), Sun, 0.73, 1.25, "Earth");
-	const Mars = new Orbiter(260, 22, img("./Images/Mars.png"), Sun, 0.4, 1.81, "Mars");
+	const Sun = new Orbiter(0, 80, img("./images/sun.png"), Origin, 0, 2, "Sun");
+	const Mercury = new Orbiter(80, 27, img("./images/mercury.png"), Sun, 1.27, 1.75, "Mercury");
+	const Venus = new Orbiter(130, 30, img("./images/venus.png"), Sun, 1, 1.48, "Venus");
+	const Earth = new Orbiter(200, 25, img("./images/earth.png"), Sun, 0.73, 1.25, "Earth");
+	const Mars = new Orbiter(260, 22, img("./images/mars.png"), Sun, 0.4, 1.81, "Mars");
 	const AsteroidBelt = {
 		asteroids: (function(x) {
 			const asteroids = [];
-			const asteroidImg = img("./Images/Asteroid.png");
+			const asteroidImg = img("./images/asteroid.png");
 			for (let i = 0; i < 360; i += x) {
 				const asteroid = new Orbiter(330 + Math.random() * 50 - 25, 10 + Math.random() * 10 - 5, asteroidImg, Sun, Math.random() * Math.random(), Math.random(), "Asteroid", false);
 				if (asteroid.rotSpeed <= 0.1) {
@@ -121,10 +121,10 @@ const Objects = [];
 			}
 		}
 	};
-	const Jupiter = new Orbiter(430, 40, img("./Images/Jupiter.png"), Sun, 0.35, 1.3, "Jupiter");
-	const Saturn = new Orbiter(535, 40, img("./Images/Saturn.png"), Sun, 0.3, 1.2, "Saturn");
-	const Uranus = new Orbiter(600, 27, img("./Images/Uranus.png"), Sun, 0.2, 1.4, "Uranus");
-	const Neptune = new Orbiter(650, 25, img("./Images/Neptune.png"), Sun, 0.1, 1.5, "Neptune");
+	const Jupiter = new Orbiter(430, 40, img("./images/jupiter.png"), Sun, 0.35, 1.3, "Jupiter");
+	const Saturn = new Orbiter(535, 40, img("./images/saturn.png"), Sun, 0.3, 1.2, "Saturn");
+	const Uranus = new Orbiter(600, 27, img("./images/uranus.png"), Sun, 0.2, 1.4, "Uranus");
+	const Neptune = new Orbiter(650, 25, img("./images/neptune.png"), Sun, 0.1, 1.5, "Neptune");
 
 	Objects.push(Stars, Sun, Mercury, Venus, Earth, Mars, AsteroidBelt, Jupiter, Saturn, Uranus, Neptune);
 
@@ -134,13 +134,13 @@ const Objects = [];
 		}
 	}
 
-	const Moon = new Orbiter(30, 14, img("./Images/Moon.png"), Earth, 1, 1.51, "Moon");
-	const Io = new Orbiter(45, 18, img("./Images/Io.png"), Jupiter, 1, 1.5, "Io");
-	const Europa = new Orbiter(45, 18, img("./Images/Europa.png"), Jupiter, 1, 1.5, "Europa");
+	const Moon = new Orbiter(30, 14, img("./images/moon.png"), Earth, 1, 1.51, "Moon");
+	const Io = new Orbiter(45, 18, img("./images/io.png"), Jupiter, 1, 1.5, "Io");
+	const Europa = new Orbiter(45, 18, img("./images/europa.png"), Jupiter, 1, 1.5, "Europa");
 	Europa.rot = 90;
-	const Ganymede = new Orbiter(45, 18, img("./Images/Ganymede.png"), Jupiter, 1, 1.5, "Ganymede");
+	const Ganymede = new Orbiter(45, 18, img("./images/ganymede.png"), Jupiter, 1, 1.5, "Ganymede");
 	Ganymede.rot = 180;
-	const Callisto = new Orbiter(45, 18, img("./Images/Callisto.png"), Jupiter, 1, 1.5, "Callisto");
+	const Callisto = new Orbiter(45, 18, img("./images/callisto.png"), Jupiter, 1, 1.5, "Callisto");
 	Callisto.rot = 270;
 
 	Objects.push(Moon, Io, Europa, Ganymede, Callisto);
@@ -188,7 +188,6 @@ const Objects = [];
 		touches.splice(indexTouch(touch), 1);
 	}
 	window.addEventListener("keydown", function(e) {
-		e = e || window.event;
 		e.preventDefault();
 		Keys[e.key.toString().toUpperCase()] = true;
 		if (Camera.tracking) {
@@ -196,12 +195,10 @@ const Objects = [];
 		}
 	});
 	window.addEventListener("keyup", function(e) {
-		e = e || window.event;
 		e.preventDefault();
 		Keys[e.key.toString().toUpperCase()] = false;
 	});
 	window.addEventListener("mousedown", function(e) {
-		e = e || window.event;
 		e.preventDefault();
 		rect = canvas.getBoundingClientRect();
 		Mouse.previous.x = Mouse.x;
@@ -231,7 +228,6 @@ const Objects = [];
 		canvas.style.cursor = "grab";
 	});
 	window.addEventListener("touchstart", function(e) {
-		e = e || window.event;
 		e.preventDefault();
 		rect = canvas.getBoundingClientRect();
 		Mouse.previous.x = Mouse.x;
@@ -268,7 +264,6 @@ const Objects = [];
 		}
 	});
 	window.addEventListener("mousemove", function(e) {
-		e = e || window.event;
 		e.preventDefault();
 		const rect = canvas.getBoundingClientRect();
 		Mouse.previous.x = Mouse.x;
@@ -281,7 +276,6 @@ const Objects = [];
 		}
 	});
 	window.addEventListener("touchmove", function(e) {
-		e = e || window.event;
 		e.preventDefault();
 		rect = canvas.getBoundingClientRect();
 		Mouse.previous.x = Mouse.x;
@@ -319,13 +313,11 @@ const Objects = [];
 		}
 	});
 	window.addEventListener("mouseup", function(e) {
-		e = e || window.event;
 		e.preventDefault();
 		Mouse.down = false;
 		canvas.style.cursor = "default";
 	});
 	window.addEventListener("touchend", function(e) {
-		e = e || window.event;
 		e.preventDefault();
 		for (let i = 0; i < e.changedTouches.length; i++) {
 			removeTouch(e.changedTouches[i]);
@@ -335,7 +327,6 @@ const Objects = [];
 		}
 	});
 	window.addEventListener("touchcancel", function(e) {
-		e = e || window.event;
 		e.preventDefault();
 		for (let i = 0; i < e.changedTouches.length; i++) {
 			removeTouch(e.changedTouches[i]);
@@ -345,7 +336,6 @@ const Objects = [];
 		}
 	});
 	window.addEventListener("wheel", function(e) {
-		e = e || window.event;
 		e.preventDefault();
 		Camera.zoom -= e.deltaY / 1000;
 		if (Camera.zoom < 0.1) {

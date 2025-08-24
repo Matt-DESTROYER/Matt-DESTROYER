@@ -1,4 +1,6 @@
-const PORT = 3000;
+import { config } from "dotenv"
+config();
+const PORT = process.env.PORT || 3000;
 
 import { createServer } from "node:http";
 import express from "express";

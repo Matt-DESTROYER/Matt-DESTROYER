@@ -1,4 +1,6 @@
-const PORT = 3001;
+import { config } from "dotenv"
+config();
+const PORT = process.env.PORT || 3001;
 
 import { createServer } from "node:http";
 import express from "express";
