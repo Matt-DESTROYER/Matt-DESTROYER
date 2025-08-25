@@ -6,9 +6,6 @@ import express from "express";
 const app = express();
 const server = createServer(app);
 
-import { Server } from "socket.io";
-const io = new Server(server);
-
 // get __dirname
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -27,25 +24,6 @@ app.use(function(req, res) {
 	res.status(404);
 	res.sendFile(join(__dirname, "../public/404.html"));
 });
-
-(function initSocketio() {
-	let usersConnected = 0;
-
-	io.on("connection", function(socket) {
-		usersConnected++;
-
-		io.emit("count", usersConnected);
-
-		socket.on("count", function() {
-			io.emit("count", usersConnected);
-		});
-
-		socket.on("disconnect", function() {
-			usersConnected--;
-			io.emit("count", usersConnected);
-		});
-	});
-})();
 
 server.listen(process.env.PORT || 3000);
 
