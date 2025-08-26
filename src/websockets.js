@@ -1,7 +1,7 @@
 const { Server } = require("ws");
 const wss = new Server({ noServer: true });
 
-const CHANNELS = {};
+const CHANNELS = new Map();
 const CLIENTS = [];
 const SOCKETS = [];
 const CALLBACKS = [];
@@ -24,7 +24,7 @@ class Channel {
 		this.name = name;
 		this.sockets = [];
 		this.#callbacks = [];
-		CHANNELS[this.name] = this;
+		CHANNELS.set(this.name, this);
 	}
 	get connected() {
 		return this.sockets.length;
@@ -68,7 +68,7 @@ class Channel {
 		}
 	}
 	delete() {
-		delete CHANNELS[this.name];
+		CHANNELS.delete(this.name);
 	}
 	id(socket) {
 		for (let i = 0; i < this.sockets.length; i++) {
@@ -114,8 +114,8 @@ class Socket {
 					callback.callback(this);
 				}
 			}
-			for (const channel of Object.keys(CHANNELS)) {
-				CHANNELS[channel].remove(this);
+			for (const channel of CHANNELS.keys()) {
+				CHANNELS.get(channel).remove(this);
 			}
 		}.bind(this));
 	}
