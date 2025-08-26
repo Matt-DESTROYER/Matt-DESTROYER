@@ -18,13 +18,11 @@ class Socket {
 
 	constructor(url = null) {
 		if (!url) {
-			this.url = "ws://" + window.location.host + "/socket";
-		} else if (window.location.protocol === "https:") {
-			this.url = "wss://" + window.location.host + "/socket";
-		} else if (window.location.protocol === "http:") {
-			this.url = "ws://" + window.location.host + "/socket";
-		} else if (!url.startsWith("ws")) {
-			this.url = "ws://" + url + "/socket";
+			if (window.location.protocol === "https:") {
+				this.url = "wss://" + window.location.host + "/socket";
+			} else {
+				this.url = "ws://" + window.location.host + "/socket";
+			}
 		} else {
 			this.url = url;
 		}
