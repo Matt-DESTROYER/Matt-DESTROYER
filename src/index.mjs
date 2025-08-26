@@ -6,8 +6,8 @@ import express from "express";
 const app = express();
 const server = createServer(app);
 
-import { Server } from "socket.io";
-const io = new Server(server);
+import initWebSockets from "./websockets.js";
+const ws = initWebSockets(server);
 
 // get __dirname
 import { fileURLToPath } from "node:url";
@@ -43,24 +43,18 @@ app.use(function(req, res) {
 	res.sendFile(join(__dirname, "/public/404.html"));
 });
 
-(function initSocketio() {
-	let usersConnected = 0;
-
-	io.on("connection", function(socket) {
-		usersConnected++;
-
-		io.emit("count", usersConnected);
+(function initWebSockets() {
+	ws.on("connection", function(socket) {
+		socket.emit("count", ws.SOCKETS.length);
 
 		socket.on("count", function() {
-			io.emit("count", usersConnected);
+			socket.send("count", ws.SOCKETS.length);
 		});
 
 		socket.on("disconnect", function() {
-			usersConnected--;
-			io.emit("count", usersConnected);
+			socket.broadcast("count", ws.SOCKETS.length);
 		});
 	});
 })();
 
 server.listen(process.env.PORT || 3000);
-
