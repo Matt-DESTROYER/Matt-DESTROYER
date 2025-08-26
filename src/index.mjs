@@ -21,22 +21,22 @@ app.use(function(req, res, next) {
 	next();
 });
 
-app.get(["/", "/Home"], function(req, res) {
+app.get(["/", "/home", "/Home"], function(req, res) {
 	res
 		.status(200)
 		.sendFile(join(__dirname, "public/home.html"));
 });
-app.get("/Projects", function(req, res) {
+app.get(["/projects", "/Projects"], function(req, res) {
 	res
 		.status(200)
 		.sendFile(join(__dirname, "public/projects.html"));
 });
-app.get("/About", function(req, res) {
+app.get(["/about", "/About"], function(req, res) {
 	res
 		.status(200)
 		.sendFile(join(__dirname, "public/about.html"));
 });
-app.get("/Contact", function(req, res) {
+app.get(["/contact", "/Contact"], function(req, res) {
 	res
 		.status(200)
 		.sendFile(join(__dirname, "public/contact.html"));
