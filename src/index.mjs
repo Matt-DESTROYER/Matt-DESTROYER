@@ -15,32 +15,32 @@ import { dirname, join } from "node:path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-app.use(express.static(join(__dirname, "./public")));
+app.use(express.static(join(__dirname, "public")));
 
 app.get(["/", "/Home"], function(req, res) {
 	res
 		.status(200)
-		.sendFile(join(__dirname, "./public/home.html"));
+		.sendFile(join(__dirname, "public/home.html"));
 });
 app.get("/Projects", function(req, res) {
 	res
 		.status(200)
-		.sendFile(join(__dirname, "./public/projects.html"));
+		.sendFile(join(__dirname, "public/projects.html"));
 });
 app.get("/About", function(req, res) {
 	res
 		.status(200)
-		.sendFile(join(__dirname, "./public/about.html"));
+		.sendFile(join(__dirname, "public/about.html"));
 });
 app.get("/Contact", function(req, res) {
 	res
 		.status(200)
-		.sendFile(join(__dirname, "./public/contact.html"));
+		.sendFile(join(__dirname, "public/contact.html"));
 });
 
 app.use(function(req, res) {
 	res.status(404);
-	res.sendFile(join(__dirname, "./public/404.html"));
+	res.sendFile(join(__dirname, "public/404.html"));
 });
 
 (function initWebSockets() {
