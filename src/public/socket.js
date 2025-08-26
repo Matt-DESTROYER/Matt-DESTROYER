@@ -20,7 +20,7 @@ class Socket {
 		if (!url) {
 			if (window.location.protocol === "https:") {
 				this.url = "wss://" + window.location.host + "/socket";
-			} else {
+			} els {
 				this.url = "ws://" + window.location.host + "/socket";
 			}
 		} else {
