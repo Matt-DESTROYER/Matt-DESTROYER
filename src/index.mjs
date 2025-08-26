@@ -1,6 +1,8 @@
 import { config } from "dotenv"
 config();
 
+const PORT = process.env.PORT || 3000;
+
 import { createServer } from "node:http";
 import express from "express";
 const app = express();
@@ -61,4 +63,4 @@ app.use(function(req, res) {
 	});
 })();
 
-server.listen(process.env.PORT || 3000);
+server.listen(PORT);
