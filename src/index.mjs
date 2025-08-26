@@ -17,6 +17,10 @@ const __dirname = dirname(__filename);
 
 app.use(express.static(join(__dirname, "public")));
 
+app.use(function(req, res, next) {
+	next();
+});
+
 app.get(["/", "/Home"], function(req, res) {
 	res
 		.status(200)
@@ -48,7 +52,7 @@ app.use(function(req, res) {
 		socket.broadcast("count", ws.SOCKETS.length);
 
 		socket.on("count", function() {
-			socket.send("count", ws.SOCKETS.length);
+			socket.emit("count", ws.SOCKETS.length);
 		});
 
 		socket.on("disconnect", function() {
