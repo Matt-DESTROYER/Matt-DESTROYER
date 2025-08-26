@@ -45,7 +45,7 @@ app.use(function(req, res) {
 
 (function initWebSockets() {
 	ws.on("connection", function(socket) {
-		socket.emit("count", ws.SOCKETS.length);
+		socket.broadcast("count", ws.SOCKETS.length);
 
 		socket.on("count", function() {
 			socket.send("count", ws.SOCKETS.length);

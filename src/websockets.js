@@ -37,7 +37,8 @@ class Channel {
 		if (!this.sockets.includes(socket)) {
 			this.sockets.push(socket);
 			for (const callback of this.#callbacks) {
-				if (callback.name === "connect") {
+				if (callback.name === "connection" ||
+						callback.name  === "connect") {
 					callback.callback(socket);
 				}
 			}
@@ -124,18 +125,13 @@ class Socket {
 	on(name, callback) {
 		this.#callbacks.push({ name, callback });
 	}
-	send(name, data) {
-		this.#client.send(new ServerResponse(name, data).toString());
-	}
 	emit(name, data) {
-		for (const socket of SOCKETS) {
-			socket.send(name, data);
-		}
+		this.#client.send(new ServerResponse(name, data).toString());
 	}
 	broadcast(name, data) {
 		for (const socket of SOCKETS) {
 			if (socket !== this) {
-				socket.send(name, data);
+				socket.emit(name, data);
 			}
 		}
 	}

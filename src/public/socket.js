@@ -51,7 +51,8 @@ class Socket {
 				}, 2000);
 			}
 			for (let i = 0; i < this.#callbacks.length; i++) {
-				if (this.#callbacks[i].name === "connect") {
+				if (this.#callbacks[i].name === "connection" ||
+						this.#callbacks[i].name === "connect") {
 					this.#callbacks[i].callback();
 					if (this.#callbacks[i].once) {
 						this.#callbacks.splice(i, 1);

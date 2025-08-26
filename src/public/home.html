@@ -47,7 +47,7 @@
 			socket.on("count", function(count) {
 				display.textContent = "People viewing this portfolio (a live counter): " + count;
 			});
-			socket.emit("count");
+			socket.on("connect", () => socket.emit("count"));
 			document.getElementsByTagName("footer")[0].prepend(display);
 		})();
 	</script>
