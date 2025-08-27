@@ -1,8 +1,4 @@
-const { Server } = require("ws");
-const wss = new Server({ noServer: true });
-
 const CHANNELS = new Map();
-const CLIENTS = [];
 const SOCKETS = [];
 const CALLBACKS = [];
 
@@ -81,43 +77,12 @@ class Channel {
 }
 
 class Socket {
-	#client;
+	client;
 	#callbacks;
 
 	constructor(client) {
-		this.#client = client;
+		this.client = client;
 		this.#callbacks = [];
-		this.#client.on("message", function(data) {
-			const _data = data.toString("utf-8");
-			if (_data === "ping") {
-				return this.#client.send("pong");
-			} else if (_data === "heartbeat") {
-				return this.#client.send("heartbeat");
-			}
-			const { name, data: __data } = JSON.parse(_data);
-			for (const callback of this.#callbacks) {
-				if (callback.name === name) {
-					callback.callback(__data);
-				}
-			}
-		}.bind(this));
-		this.#client.on("close", function() {
-			CLIENTS.splice(CLIENTS.indexOf(this.#client), 1);
-			SOCKETS.splice(SOCKETS.indexOf(this), 1);
-			for (const callback of this.#callbacks) {
-				if (callback.name === "disconnect") {
-					callback.callback(this);
-				}
-			}
-			for (const callback of CALLBACKS) {
-				if (callback.name === "disconnect") {
-					callback.callback(this);
-				}
-			}
-			for (const channel of CHANNELS.keys()) {
-				CHANNELS.get(channel).remove(this);
-			}
-		}.bind(this));
 	}
 	get id() {
 		return SOCKETS.indexOf(this);
@@ -126,7 +91,7 @@ class Socket {
 		this.#callbacks.push({ name, callback });
 	}
 	emit(name, data) {
-		this.#client.send(new ServerResponse(name, data).toString());
+		this.client.send(new ServerResponse(name, data).toString());
 	}
 	broadcast(name, data) {
 		for (const socket of SOCKETS) {
@@ -135,29 +100,83 @@ class Socket {
 			}
 		}
 	}
+	handleMessage(response) {
+		if (typeof response !== string) {
+			return;
+		}
+
+		const data = response.toString("utf-8");
+
+		if (data === "ping") {
+			return this.client.send("pong");
+		} else if (data === "heartbeat") {
+			return this.client.send("heartbeat");
+		}
+
+		try {
+			const json = JSON.parse(data);
+			for (const callback of this.#callbacks) {
+				if (callback.name === json.name) {
+					callback.callback(json.data);
+				}
+			}
+		} catch (error) {
+			console.error("Failed to parse WebSocket message:");
+			console.error(error);
+			console.info("Content:");
+			console.info(response);
+		}
+	}
+	handleClose() {
+		for (const callback of this.#callbacks) {
+			if (callback.name === "disconnect") {
+				callback.callback(this);
+			}
+		}
+
+		for (const [name, channel] of CHANNELS) {
+			channel.remove(this);
+		}
+	}
 }
 
-module.exports = function init(server) {
-	server.on("upgrade", function(req, _socket, head) {
-		if (req.url === "/socket") {
-			wss.handleUpgrade(req, _socket, head, function(client) {
-				CLIENTS.push(client);
-				const socket = new Socket(client);
-				SOCKETS.push(socket);
+export default function init(app) {
+	app.ws("/socket", {
+		open(client) {
+			const socket = new Socket(client);
+			SOCKETS.push(socket);
+			for (const callback of CALLBACKS) {
+				if (callback.name === "connection" ||
+						callback.name === "connect") {
+					callback.callback(socket);
+				}
+			}
+		},
+		message(client, message) {
+			const socket = SOCKETS.find((socket) => socket.client.raw === client.raw);
+			if (socket) {
+				socket.handleMessage(message);
+			}
+		},
+		close(client/*, code, message*/) {
+			const socket = SOCKETS.find((socket) => socket.client.raw === client.raw);
+			if (socket) {
+				SOCKETS.splice(SOCKETS.indexOf(socket), 1);
+				socket.handleClose();
 				for (const callback of CALLBACKS) {
-					if (callback.name === "connection" ||
-							callback.name === "connect") {
-						callback.callback(socket, req);
+					if (callback.name === "disconnect") {
+						callback.callback(socket);
 					}
 				}
-			});
-		} else {
-			_socket.destroy();
+			}
+			client.close();
 		}
 	});
+	app.decorate("channels", CHANNELS);
+	app.decorate("sockets", SOCKETS);
 	return {
-		SOCKETS,
-		CHANNELS,
+		channels: CHANNELS,
+		sockets: SOCKETS,
 		on: function(name, callback) {
 			CALLBACKS.push({ name, callback });
 		},

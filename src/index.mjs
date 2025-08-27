@@ -3,64 +3,47 @@ config();
 
 const PORT = process.env.PORT || 3000;
 
-import { createServer } from "node:http";
-import express from "express";
-const app = express();
-const server = createServer(app);
+import { Elysia } from "elysia";
+const app = new Elysia();
 
-import initWebSockets from "./websockets.js";
-const ws = initWebSockets(server);
+import initWebSockets from "./websockets.mjs";
+const ws = initWebSockets(app);
 
-// get __dirname
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { staticPlugin } from "@elysiajs/static";
+app.use(staticPlugin({
+	assets: "public",
+	prefix: "/"
+}));
 
-app.use(express.static(join(__dirname, "public")));
+app
+	.get("/", () => Bun.file("./public/home.html"))
+	.get("/home", () => Bun.file("./public/home.html"))
+	.get("/Home", () => Bun.file("./public/home.html"));
 
-app.use(function(req, res, next) {
-	next();
-});
+app
+	.get("/projects", () => Bun.file("./public/projects.html"))
+	.get("/Projects", () => Bun.file("./public/projects.html"));
 
-app.get(["/", "/home", "/Home"], function(req, res) {
-	res
-		.status(200)
-		.sendFile(join(__dirname, "public/home.html"));
-});
-app.get(["/projects", "/Projects"], function(req, res) {
-	res
-		.status(200)
-		.sendFile(join(__dirname, "public/projects.html"));
-});
-app.get(["/about", "/About"], function(req, res) {
-	res
-		.status(200)
-		.sendFile(join(__dirname, "public/about.html"));
-});
-app.get(["/contact", "/Contact"], function(req, res) {
-	res
-		.status(200)
-		.sendFile(join(__dirname, "public/contact.html"));
-});
+app
+	.get("/about", () => Bun.file("./public/about.html"))
+	.get("/About", () => Bun.file("./public/about.html"));
 
-app.use(function(req, res) {
-	res.status(404);
-	res.sendFile(join(__dirname, "public/404.html"));
-});
+app
+	.get("/contact", () => Bun.file("./public/contact.html"))
+	.get("/Contact", () => Bun.file("./public/contact.html"));
 
-(function initWebSockets() {
-	ws.on("connection", function(socket) {
-		socket.broadcast("count", ws.SOCKETS.length);
+app.use(() => Bun.file("./public/404.html"));
 
-		socket.on("count", function() {
-			socket.emit("count", ws.SOCKETS.length);
-		});
+ws.on("connect", (socket) => {
+	socket.broadcast("count", ws.sockets.length);
 
-		socket.on("disconnect", function() {
-			socket.broadcast("count", ws.SOCKETS.length);
-		});
+	socket.on("count", () => {
+		socket.emit("count", ws.sockets.length);
 	});
-})();
 
-server.listen(PORT);
+	socket.on("disconnect", () => {
+		socket.broadcast("count", ws.sockets.length);
+	});
+});
+
+app.listen(PORT);
