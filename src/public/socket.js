@@ -40,14 +40,16 @@ class Socket {
 				this.connected = true;
 				this.#heartbeating = true;
 				heartbeat = setInterval(() => {
+					if (!this.#heartbeating) {
+						setTimeout(() => {
+							if (!this.#heartbeating) {
+								clearInterval(heartbeat);
+								console.info("[Socket.js] Disconnected from " + this.url + ".");
+								this.#initSocket();
+							}
+						}, 1500);
+					}
 					this.#heartbeat();
-					setTimeout(() => {
-						if (!this.#heartbeating) {
-							clearInterval(heartbeat);
-							console.info("[Socket.js] Disconnected from " + this.url + ".");
-							this.#initSocket();
-						}
-					}, 1500);
 				}, 2000);
 			}
 			for (let i = 0; i < this.#callbacks.length; i++) {
