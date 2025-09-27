@@ -5,7 +5,7 @@ const footer = function(socket) {
 	const info_image = document.createElement("img");
 	info_image.classList.add("language-icon");
 	info_image.setAttribute("title", "Rust");
-	info_image.setAttribute("src", "../Images/Rust.png");
+	info_image.setAttribute("src", "../Images/Rust.jpeg");
 	info.append(info_image);
 	const info_text = document.createElement("p");
 	info_text.setAttribute("style", "margin-left: 5px;");
