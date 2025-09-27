@@ -4,8 +4,8 @@ const footer = function(socket) {
 	info.setAttribute("style", "display: flex;");
 	const info_image = document.createElement("img");
 	info_image.classList.add("language-icon");
-	info_image.setAttribute("title", "NodeJS");
-	info_image.setAttribute("src", "../Images/NodeJS.png");
+	info_image.setAttribute("title", "Rust");
+	info_image.setAttribute("src", "../Images/Rust.png");
 	info.append(info_image);
 	const info_text = document.createElement("p");
 	info_text.setAttribute("style", "margin-left: 5px;");
