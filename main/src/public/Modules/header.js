@@ -7,13 +7,9 @@ const nav = await fetch("../nav.json").then(function(res) {
 const header = function() {
 	const head = document.createElement("header");
 	const a = document.createElement("a");
-	a.setAttribute("href", "./Home");
-	const logo = document.createElement("img");
-	logo.setAttribute("src", "../Images/logo.png");
-	logo.setAttribute("height", 100);
-	a.append(logo);
+	a.setAttribute("href", "./");
 	const title = document.createElement("h1");
-	title.textContent = "MattDESTROYER";
+	title.textContent = "Matthew James";
 	a.append(title);
 	head.append(a);
 	const navbar = document.createElement("nav");

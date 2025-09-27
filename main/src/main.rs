@@ -40,6 +40,8 @@ use serde_json::Value;
 
 type Clients = Arc<Mutex<Vec<tokio::sync::mpsc::UnboundedSender<String>>>>;
 
+const PORT: u16 = 3000;
+
 #[tokio::main]
 async fn main() {
     let clients: Clients = Arc::new(Mutex::new(Vec::<tokio::sync::mpsc::UnboundedSender<String>>::new()));
@@ -66,7 +68,7 @@ async fn main() {
         .route_service("/Contact", ServeFile::new("./public/contact.html"))
         .fallback_service(serve_dir);
 
-    let listener = tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], 3002)))
+    let listener = tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], PORT)))
         .await
         .unwrap();
 
