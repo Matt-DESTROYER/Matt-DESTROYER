@@ -22,35 +22,14 @@
 
 <body>
 	<main>
-		<h1>My portfolio site!</h1>
+		<h1>My personal website!</h1>
 		<p>
-			I haven't ever really had a proper portfolio site.
-			I did start making one a couple of months ago, but I never really got into it and wasn't happy with what I came up with...
-			Until now...
-			I give you!
-			For the first time ever:
-			My portfolio site!
+			Welcome to my personal website!
+			It's been a while since I've had a personal website that wasn't incredibly outdated...
 		</p>
 	</main>
 
-	<script type="module">
-		import header from "./Modules/header.js";
-		import footer from "./Modules/footer.js";
-		document.body.prepend(header());
-		document.body.append(footer());
-		
-		import Socket from "./socket.js";
-		(function initCounter() {
-			const socket = new Socket();
-			const display = document.createElement("p");
-			display.textContent = "People viewing this portfolio (a live counter): 1";
-			socket.on("count", function(count) {
-				display.textContent = "People viewing this portfolio (a live counter): " + count;
-			});
-			socket.on("connect", () => socket.emit("count"));
-			document.getElementsByTagName("footer")[0].prepend(display);
-		})();
-	</script>
+	<script type="module" src="./Modules/default.js"></script>
 	<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="mattdestroyer" data-description="Support me on Buy me a coffee!" data-message="Buy me a coffee?" data-color="#5F7FFF" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 </body>
 
