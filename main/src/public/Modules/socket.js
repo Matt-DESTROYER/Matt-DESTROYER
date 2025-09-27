@@ -9,8 +9,10 @@ class ClientRequest {
 	}
 }
 
-const HEARTBEAT_DELAY = 10_000;
-const LATEHEARTBEAT_DELAY = 10_000;
+const HEARTBEAT_DELAY     = 2_000;
+const LATEHEARTBEAT_DELAY = 250;
+const RECONNECT_DELAY     = 200;
+const RECONNECT_DELAY_MAX = 10_000;
 
 class Socket {
 	#closed;
@@ -18,13 +20,14 @@ class Socket {
 	#pings;
 	#heart;
 	#lastHeartbeat;
+	#reconnectDelay;
 
 	constructor(url = null) {
 		if (!url) {
 			if (window.location.protocol === "https:") {
-				this.url = "wss://" + window.location.host + "/socket";
+				this.url = "wss://" + window.location.host + "/websocket";
 			} else {
-				this.url = "ws://" + window.location.host + "/socket";
+				this.url = "ws://" + window.location.host + "/websocket";
 			}
 		} else {
 			this.url = url;
@@ -37,7 +40,24 @@ class Socket {
 
 		this.#initSocket();
 	}
+	get readyState() {
+		return this.socket ? this.socket.readyState : null;
+	}
 	#initSocket() {
+		if (this.socket && (
+			this.readyState === WebSocket.CONNECTING ||
+			this.readyState === WebSocket.OPEN
+		)) {
+			try {
+				this.socket.close(1000, "Reconnecting");
+			} catch (_) {}
+		}
+
+		if (this.#heart !== null) {
+			clearInterval(this.#heart);
+			this.#heart = null;
+		}
+
 		this.#pings = [];
 		this.socket = new WebSocket(this.url);
 		this.socket.addEventListener("open",    ()         => this.#handleOpen());
@@ -45,50 +65,56 @@ class Socket {
 		this.socket.addEventListener("error",   (error)    => this.#handleError(error));
 		this.socket.addEventListener("close",   ()         => this.#handleClose());
 	}
-	#heartbeat() {
-		this.socket.send("heartbeat");
-	}
-	#handleOpen() {
-			if (this.socket.readyState !== 1) {
+	#scheduleHeartbeat() {
+		if (this.#heart !== null) {
+			clearTimeout(this.#heart);
+			this.#heart = null;
+		}
+		this.#heart = setTimeout(() => {
+			if (performance.now() - this.#lastHeartbeat >= HEARTBEAT_DELAY + LATEHEARTBEAT_DELAY) {
+				this.#scheduleReconnect();
 				return;
 			}
 
-			if (this.#heart !== null) {
-				clearInterval(this.#heart);
-				this.#heart = null;
+			if (this.readyState === WebSocket.OPEN) {
+				this.socket.send("heartbeat");
 			}
 
-			// regularly poll the server to make sure we're still connected
-			this.#lastHeartbeat = performance.now();
-			this.#heart = setInterval(() => {
-				if (performance.now() - this.#lastHeartbeat >= HEARTBEAT_DELAY) {
-					// grace period if we haven't received a response
-					setTimeout(() => {
-						if (performance.now() - this.#lastHeartbeat >= LATEHEARTBEAT_DELAY) {
-							clearInterval(this.#heart);
-							this.#heart = null;
-							this.#initSocket();
-						}
-					}, LATEHEARTBEAT_DELAY);
-				} else {
-					this.#heartbeat();
-				}
-			}, HEARTBEAT_DELAY);
+			this.#scheduleHeartbeat();
+		}, HEARTBEAT_DELAY);
+	}
+	#scheduleReconnect() {
+		console.warn("Reconnecting to the server...");
+		if (this.#closed) return;
+		setTimeout(() => this.#initSocket(), this.#reconnectDelay);
+		this.#reconnectDelay = Math.min(this.#reconnectDelay * 2, RECONNECT_DELAY_MAX)
+	}
+	#handleOpen() {
+		if (this.readyState !== WebSocket.OPEN) return;
 
-			this.#heartbeat();
+		if (this.#heart !== null) {
+			clearInterval(this.#heart);
+			this.#heart = null;
+		}
 
-			for (let i = 0; i < this.#callbacks.length; i++) {
-				const callback = this.#callbacks[i];
-				if (callback.name === "connection" ||
-						callback.name === "connect") {
-					callback.callback();
-					if (callback.once) {
-						this.#callbacks.splice(i, 1);
-						i--;
-					}
+		// regularly poll the server to make sure we're still connected
+		this.#reconnectDelay = RECONNECT_DELAY;
+		this.#lastHeartbeat = performance.now();
+		this.socket.send("heartbeat");
+		this.#scheduleHeartbeat();
+
+		for (let i = 0; i < this.#callbacks.length; i++) {
+			const callback = this.#callbacks[i];
+			if (callback.name === "connection" ||
+					callback.name === "connect") {
+				callback.callback();
+				if (callback.once) {
+					this.#callbacks.splice(i, 1);
+					i--;
 				}
 			}
 		}
+	}
 	#handleMessage(response) {
 		if (response.data === "pong") {
 			const ping = performance.now() - this.#pings.shift();
@@ -111,16 +137,20 @@ class Socket {
 		}
 	
 		// treat as regular message
-		const { name, data } = JSON.parse(response.data);
-		for (let i = 0; i < this.#callbacks.length; i++) {
-			const callback = this.#callbacks[i];
-			if (callback.name === name) {
-				callback.callback(data);
-				if (callback.once) {
-					this.#callbacks.splice(i, 1);
-					i--;
+		try {
+			const { name, data } = JSON.parse(response.data);
+			for (let i = 0; i < this.#callbacks.length; i++) {
+				const callback = this.#callbacks[i];
+				if (callback.name === name) {
+					callback.callback(data);
+					if (callback.once) {
+						this.#callbacks.splice(i, 1);
+						i--;
+					}
 				}
 			}
+		} catch (err) {
+			console.warn("Invalid JSON from server:", response.data);
 		}
 	}
 	#handleError(error) {
@@ -136,9 +166,6 @@ class Socket {
 		}
 	}
 	#handleClose() {
-		if (!this.#closed) {
-			this.#initSocket();
-		}
 		for (let i = 0; i < this.#callbacks.length; i++) {
 			const callback = this.#callbacks[i];
 			if (callback.name === "disconnect") {
@@ -157,14 +184,27 @@ class Socket {
 		this.#callbacks.push({ name, callback: callback.bind(this), once: false });
 	}
 	ping() {
-		this.#pings.push(performance.now());
-		this.socket.send("ping");
+		if (this.readyState === WebSocket.OPEN) {
+			this.#pings.push(performance.now());
+			this.socket.send("ping");
+		}
 	}
 	emit(name, data) {
-		this.socket.send(new ClientRequest(name, data).toString());
+		if (this.readyState === WebSocket.OPEN) {
+			this.socket.send(new ClientRequest(name, data).toString());
+		}
 	}
 	close(reason) {
-		this.socket.close(1000, reason);
+		if (this.socket && (
+			this.readyState === WebSocket.CONNECTING ||
+			this.readyState === WebSocket.OPEN
+		)) {
+			this.socket.close(1000, reason);
+		}
+		if (this.#heart !== null) {
+			clearInterval(this.#heart);
+			this.#heart = null;
+		}
 		this.#closed = true;
 	}
 }

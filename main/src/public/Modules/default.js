@@ -17,7 +17,7 @@ import Socket from "./socket.js";
 	socket.on("count", function(count) {
 		display.textContent = count_message + count;
 	});
-	socket.on("connect", () => socket.emit("count"));
+	//socket.once("connect", () => socket.emit("count"));
 
 	document.getElementsByTagName("footer")[0].prepend(display);
 })();

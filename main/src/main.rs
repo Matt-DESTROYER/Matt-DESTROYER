@@ -55,7 +55,7 @@ async fn main() {
         });
 
     let app = Router::new()
-        .route("/socket", get(ws_handler))
+        .route("/websocket", get(ws_handler))
         .with_state(clients)
         .route_service("/", ServeFile::new("./public/home.html"))
         .route_service("/home", ServeFile::new("./public/home.html"))
@@ -170,9 +170,7 @@ fn count(clients: &Clients) -> String {
 }
 
 fn broadcast(msg: String, clients: &Clients) {
-    let clients = clients.lock().unwrap();
-    for client in clients.iter() {
-        let _ = client.send(msg.clone());
-    }
+    let mut clients = clients.lock().unwrap();
+    clients.retain(|client| client.send(msg.clone()).is_ok());
 }
 
