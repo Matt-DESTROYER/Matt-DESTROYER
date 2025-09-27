@@ -9,7 +9,7 @@ const footer = function(socket) {
 	info.append(info_image);
 	const info_text = document.createElement("p");
 	info_text.setAttribute("style", "margin-left: 5px;");
-	info_text.innerHTML = "This website was created using <a href=\"https://rust-lang.org\">Rust</a> and is self-hosted using a Cloudflare tunnel and a home-built personal Ubuntu server!";
+	info_text.innerHTML = "This website was created using <a href=\"https://rust-lang.org\">Rust</a> and is self-hosted using a home-built personal Ubuntu server and a Cloudflare tunnel!";
 	info.append(info_text);
 	foot.append(info);
 	const copyright = document.createElement("p");
