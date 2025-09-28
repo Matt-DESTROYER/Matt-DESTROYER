@@ -20,7 +20,7 @@ use std::{
     net::SocketAddr
 };
 
-const PORT: u16 = 3002;
+const PORT: u16 = 3001; // projects.matthewjames.xyz
 
 #[tokio::main]
 async fn main() {

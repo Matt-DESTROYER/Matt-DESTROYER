@@ -40,7 +40,7 @@ use serde_json::Value;
 
 type Clients = Arc<Mutex<Vec<tokio::sync::mpsc::UnboundedSender<String>>>>;
 
-const PORT: u16 = 3000;
+const PORT: u16 = 3000; // matthewjames.xyz
 
 #[tokio::main]
 async fn main() {
