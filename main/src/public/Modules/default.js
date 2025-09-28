@@ -1,8 +1,11 @@
 import header from "./header.js";
 import footer from "./footer.js";
 
-document.body.prepend(header());
-document.body.append(footer());
+const main_element = document.querySelector("main");
+
+const header_element = header(), footer_element = footer();
+main_element.prepend(header_element);
+main_element.append(footer_element);
 
 import Socket from "./socket.js";
 
@@ -17,7 +20,6 @@ import Socket from "./socket.js";
 	socket.on("count", function(count) {
 		display.textContent = count_message + count;
 	});
-	//socket.once("connect", () => socket.emit("count"));
 
-	document.getElementsByTagName("footer")[0].prepend(display);
+	footer_element.prepend(display);
 })();

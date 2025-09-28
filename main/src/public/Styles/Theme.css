@@ -11,12 +11,23 @@ header a {
 
 header > a {
 	display: flex;
-	padding-bottom: 10px;
 }
 
 header > a > h1 {
 	font-size: 48px;
 	padding-left: 10px;
+	padding-bottom: 0;
+	margin-top: 12px;
+	margin-bottom: 12px;
+}
+
+header > span {
+	font-size: 12px;
+	padding-left: 20px;
+}
+
+header > nav {
+	margin-top: 20px;
 }
 
 header > nav > a {
@@ -34,13 +45,23 @@ header > nav > a:active {
 }
 
 body {
-	background-color: #0e1525;
-	color: white;
-	font-family: Hack;
+	background-color: #0c121f;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	margin: 0;
+	height: 100vh;
 }
 
 main {
+	background-color: #0e1525;
+	color: white;
+	font-family: Hack;
 	padding: 20px;
+	max-width: 1000px;
+	height: 90%;
+	border-radius: 30px;
 }
 
 a:visited {
