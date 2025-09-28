@@ -117,7 +117,7 @@ async fn handle_server_message(socket: &mut SplitSink<WebSocket, Message>, msg: 
 
     match json["name"].as_str() {
         Some("count") => {
-            if socket.send(Message::Text(count(clients).into())).await.is_err() {
+            if socket.send(Message::Text(msg.into())).await.is_err() {
                 return false;
             }
         },
