@@ -18,7 +18,7 @@ const footer = function(socket) {
 	foot.append(info);
 
 	const copyright = document.createElement("p");
-	copyright.textContent = "This site is Matthew James' portfolio site. To contact Matthew, refer to the contact page.";
+	copyright.innerHTML = "© Matthew James 2025. To contact Matthew, please refer to the <a href=\"./Contact\">contact page</a>.";
 
 	foot.append(copyright);
 
