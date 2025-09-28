@@ -71,6 +71,11 @@ class Socket {
 			this.#heart = null;
 		}
 		this.#heart = setTimeout(() => {
+			if (document.hidden) {
+				console.warn("Page hidden...");
+				return this.#scheduleHeartbeat();
+			}
+
 			if (performance.now() - this.#lastHeartbeat >= HEARTBEAT_DELAY + LATEHEARTBEAT_DELAY) {
 				this.#scheduleReconnect();
 				return;
@@ -84,8 +89,8 @@ class Socket {
 		}, HEARTBEAT_DELAY);
 	}
 	#scheduleReconnect() {
-		console.warn("Reconnecting to the server...");
 		if (this.#closed) return;
+		console.warn("Reconnecting to the server...");
 		setTimeout(() => this.#initSocket(), this.#reconnectDelay);
 		this.#reconnectDelay = Math.min(this.#reconnectDelay * 2, RECONNECT_DELAY_MAX)
 	}

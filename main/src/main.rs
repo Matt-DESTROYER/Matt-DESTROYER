@@ -93,7 +93,7 @@ async fn handle_socket(socket: WebSocket, clients: Clients) {
         tokio::select! {
             // server messages
             Some(msg) = receiver.recv() => {
-                if !handle_server_message(&mut socket_sender, msg, &clients).await {
+                if !handle_server_message(&mut socket_sender, msg/*, &clients*/).await {
                     break;
                 }
             }
@@ -112,7 +112,7 @@ async fn handle_socket(socket: WebSocket, clients: Clients) {
     broadcast(count(&clients), &clients);
 }
 
-async fn handle_server_message(socket: &mut SplitSink<WebSocket, Message>, msg: String, clients: &Clients) -> bool {
+async fn handle_server_message(socket: &mut SplitSink<WebSocket, Message>, msg: String/*, clients: &Clients*/) -> bool {
     let json: Value = serde_json::from_str(&msg).unwrap();
 
     match json["name"].as_str() {

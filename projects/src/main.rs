@@ -4,7 +4,6 @@ use axum:: {
         IntoResponse
     },
     routing::{
-        get,
         get_service
     },
     Router
