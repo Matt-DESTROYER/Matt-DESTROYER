@@ -7,7 +7,7 @@ use axum::{
     extract::State,
     response::{
         Html,
-        IntoResponse,
+        IntoResponse
     },
     routing::{
         get,
