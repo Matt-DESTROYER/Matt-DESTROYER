@@ -1,3 +1,14 @@
+use std::{
+    sync::{
+        Arc,
+        Mutex
+    },
+    fs,
+    net::SocketAddr
+};
+
+use tokio::net::TcpListener;
+
 use axum::{
     extract::ws::{
         Message,
@@ -11,7 +22,8 @@ use axum::{
     },
     routing::{
         get,
-        get_service
+        get_service,
+        MethodRouter
     },
     Router
 };
@@ -19,15 +31,6 @@ use axum::{
 use tower_http::services::{
     ServeDir,
     ServeFile
-};
-
-use std::{
-    sync::{
-        Arc,
-        Mutex
-    },
-    fs,
-    net::SocketAddr
 };
 
 use futures_util::{
@@ -46,7 +49,7 @@ const PORT: u16 = 3000; // matthewjames.xyz
 async fn main() {
     let clients: Clients = Arc::new(Mutex::new(Vec::<tokio::sync::mpsc::UnboundedSender<String>>::new()));
 
-    let serve_dir = get_service(ServeDir::new("./public"))
+    let serve_dir: MethodRouter = get_service(ServeDir::new("./public"))
         .handle_error(|_| async {
             match fs::read_to_string("./public/404.html") {
                 Ok(contents) => Html(contents).into_response(),
@@ -54,7 +57,7 @@ async fn main() {
             }
         });
 
-    let app = Router::new()
+    let app: Router = Router::new()
         .route("/websocket", get(ws_handler))
         .with_state(clients)
         .route_service("/", ServeFile::new("./public/home.html"))
@@ -68,7 +71,7 @@ async fn main() {
         .route_service("/Contact", ServeFile::new("./public/contact.html"))
         .fallback_service(serve_dir);
 
-    let listener = tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], PORT)))
+    let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], PORT)))
         .await
         .unwrap();
 

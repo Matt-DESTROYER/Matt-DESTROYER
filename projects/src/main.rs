@@ -1,10 +1,18 @@
+use std::{
+    fs,
+    net::SocketAddr
+};
+
+use tokio::net::TcpListener;
+
 use axum:: {
     response::{
         Html,
         IntoResponse
     },
     routing::{
-        get_service
+        get_service,
+        MethodRouter
     },
     Router
 };
@@ -14,16 +22,11 @@ use tower_http::services::{
     ServeFile
 };
 
-use std::{
-    fs,
-    net::SocketAddr
-};
-
 const PORT: u16 = 3001; // projects.matthewjames.xyz
 
 #[tokio::main]
 async fn main() {
-    let serve_dir = get_service(ServeDir::new("./static"))
+    let serve_dir: MethodRouter = get_service(ServeDir::new("./static"))
         .handle_error(|_| async {
             match fs::read_to_string("./static/404.html") {
                 Ok(contents) => Html(contents).into_response(),
@@ -35,7 +38,7 @@ async fn main() {
         .route_service("/", ServeFile::new("./static/projects.html"))
         .fallback_service(serve_dir);
 
-    let listener = tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], PORT)))
+    let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], PORT)))
         .await
         .unwrap();
 
