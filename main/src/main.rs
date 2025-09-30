@@ -49,9 +49,9 @@ const PORT: u16 = 3000; // matthewjames.xyz
 async fn main() {
     let clients: Clients = Arc::new(Mutex::new(Vec::<tokio::sync::mpsc::UnboundedSender<String>>::new()));
 
-    let serve_dir: MethodRouter = get_service(ServeDir::new("./public"))
+    let serve_dir: MethodRouter = get_service(ServeDir::new("./static"))
         .handle_error(|_| async {
-            match fs::read_to_string("./public/404.html") {
+            match fs::read_to_string("./static/404.html") {
                 Ok(contents) => Html(contents).into_response(),
                 Err(_) => (axum::http::StatusCode::NOT_FOUND, "404 Not Found").into_response()
             }
@@ -60,15 +60,15 @@ async fn main() {
     let app: Router = Router::new()
         .route("/websocket", get(ws_handler))
         .with_state(clients)
-        .route_service("/", ServeFile::new("./public/home.html"))
-        .route_service("/home", ServeFile::new("./public/home.html"))
-        .route_service("/Home", ServeFile::new("./public/home.html"))
-        .route_service("/about", ServeFile::new("./public/about.html"))
-        .route_service("/About", ServeFile::new("./public/about.html"))
-        .route_service("/projects", ServeFile::new("./public/projects.html"))
-        .route_service("/Projects", ServeFile::new("./public/projects.html"))
-        .route_service("/contact", ServeFile::new("./public/contact.html"))
-        .route_service("/Contact", ServeFile::new("./public/contact.html"))
+        .route_service("/", ServeFile::new("./static/home.html"))
+        .route_service("/home", ServeFile::new("./static/home.html"))
+        .route_service("/Home", ServeFile::new("./static/home.html"))
+        .route_service("/about", ServeFile::new("./static/about.html"))
+        .route_service("/About", ServeFile::new("./static/about.html"))
+        .route_service("/projects", ServeFile::new("./static/projects.html"))
+        .route_service("/Projects", ServeFile::new("./static/projects.html"))
+        .route_service("/contact", ServeFile::new("./static/contact.html"))
+        .route_service("/Contact", ServeFile::new("./static/contact.html"))
         .fallback_service(serve_dir);
 
     let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], PORT)))

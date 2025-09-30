@@ -1,0 +1,19 @@
+{
+	"platforms": [
+		{
+			"name": "GitHub - Matt-DESTROYER",
+			"logo": "https://static.matthewjames.xyz/Images/github.png",
+			"url": "https://github.com/Matt-DESTROYER"
+		},
+		{
+			"name": "Gmail - mattdestroyerpro@gmail.com",
+			"logo": "https://static.matthewjames.xyz/Images/gmail.svg",
+			"url": "mailto:mattdestroyerpro@gmail.com"
+		},
+		{
+			"name": "Discord - mattdestroyer",
+			"logo": "https://static.matthewjames.xyz/Images/discord.png",
+			"url": "https://discord.com/users/953498847701774366"
+		}
+	]
+}

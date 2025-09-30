@@ -16,7 +16,7 @@
 	<meta property="og:description" content="Matthew James' portfolio site!"/>
 
 	<title>Contact me</title>
-	<link rel="icon" type="image/png" href="./Images/logo.png" />
+	<link rel="icon" type="image/png" href="https://static.matthewjames.xyz/Images/logo.png" />
 	<link rel="stylesheet" type="text/css" href="./Styles/Theme.css" />
 </head>
 
@@ -30,7 +30,7 @@
 		<script type="text/javascript">
 			(function initSocials() {
 				const socialsDiv = document.getElementById("socials");
-				fetch("./socials.json")
+				fetch("https://static.matthewjames.xyz/socials.json")
 					.then(function(res) { return res.json(); })
 					.then(function(socials) {
 						for (const platform of socials.platforms) {
