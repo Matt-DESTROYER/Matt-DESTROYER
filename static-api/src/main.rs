@@ -17,12 +17,9 @@ use axum:: {
     Router
 };
 
-use tower_http::services::{
-    ServeDir,
-    ServeFile
-};
+use tower_http::services::ServeDir;
 
-const PORT: u16 = 3003; // static.matthewjames.xyz
+const PORT: u16 = 3002; // static.matthewjames.xyz
 
 #[tokio::main]
 async fn main() {
