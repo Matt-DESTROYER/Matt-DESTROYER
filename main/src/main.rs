@@ -71,7 +71,7 @@ async fn main() {
         .route_service("/Contact", ServeFile::new("./static/contact.html"))
         .fallback_service(serve_dir);
 
-    let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], PORT)))
+    let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
         .await
         .unwrap();
 
