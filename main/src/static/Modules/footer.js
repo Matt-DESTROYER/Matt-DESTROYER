@@ -1,3 +1,5 @@
+const static_api = "https://static.matthewjames.xyz";
+
 const footer = function(socket) {
 	const foot = document.createElement("footer");
 
@@ -7,7 +9,7 @@ const footer = function(socket) {
 	const info_image = document.createElement("img");
 	info_image.classList.add("language-icon");
 	info_image.setAttribute("title", "Rust");
-	info_image.setAttribute("src", "../Images/Rust.jpeg");
+	info_image.setAttribute("src", static_api + "/Images/Rust.jpeg");
 	info.append(info_image);
 
 	const info_text = document.createElement("p");
@@ -26,3 +28,4 @@ const footer = function(socket) {
 };
 
 export { footer as default };
+

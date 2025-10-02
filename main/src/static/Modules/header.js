@@ -1,6 +1,8 @@
 import anchor from "./anchor.js";
 
-const nav = await fetch("../nav.json").then(function(res) {
+const static_api = "https://static.matthewjames.xyz";
+
+const nav = await fetch(static_api + "/nav.json").then(function(res) {
 	return res.json();
 });
 
@@ -30,3 +32,4 @@ const header = function() {
 };
 
 export { header as default };
+
