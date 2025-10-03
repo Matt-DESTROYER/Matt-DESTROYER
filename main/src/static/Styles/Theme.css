@@ -61,8 +61,10 @@ main {
 	padding: 20px;
 	max-width: 1000px;
 	border-radius: 30px;
-	
 	min-height: 90vh;
+
+	display: flex;
+	flex-direction: column;
 }
 
 a:visited {
@@ -93,7 +95,7 @@ li {
 }
 
 footer {
-	
+	margin-top: auto;
 }
 
 footer p {
