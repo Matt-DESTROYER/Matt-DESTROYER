@@ -6,10 +6,6 @@ use std::{
 use tokio::net::TcpListener;
 
 use axum::{
-    http::{
-        header,
-        Method
-    },
     response::{
         Html,
         IntoResponse
