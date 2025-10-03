@@ -5,7 +5,11 @@ use std::{
 
 use tokio::net::TcpListener;
 
-use axum:: {
+use axum::{
+    http::{
+        header,
+        Method
+    },
     response::{
         Html,
         IntoResponse
@@ -17,7 +21,13 @@ use axum:: {
     Router
 };
 
-use tower_http::services::ServeDir;
+use tower_http::{
+    cors::{
+        AllowOrigin,
+        CorsLayer
+    },
+    services::ServeDir
+};
 
 const PORT: u16 = 3002; // static.matthewjames.xyz
 
@@ -31,8 +41,16 @@ async fn main() {
             }
         });
 
+    let cors_layer: CorsLayer = CorsLayer::new()
+        .allow_origin(AllowOrigin::list([
+            "https://static.matthewjames.xyz".parse().unwrap()
+        ]))
+        .allow_methods([Method::GET])
+        .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION]);
+
     let app = Router::new()
-        .fallback_service(serve_dir);
+        .fallback_service(serve_dir)
+        .layer(cors_layer);
 
     let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
         .await
