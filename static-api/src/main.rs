@@ -23,7 +23,7 @@ use axum::{
 
 use tower_http::{
     cors::{
-        AllowOrigin,
+        Any,
         CorsLayer
     },
     services::ServeDir
@@ -42,12 +42,7 @@ async fn main() {
         });
 
     let cors_layer: CorsLayer = CorsLayer::new()
-        .allow_origin(AllowOrigin::list([
-            "https://matthewjames.xyz".parse().unwrap(),
-            "https://projects.matthewjames.xyz".parse().unwrap()
-        ]))
-        .allow_methods([Method::GET])
-        .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION]);
+        .allow_origin(Any);
 
     let app = Router::new()
         .fallback_service(serve_dir)
