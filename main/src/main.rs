@@ -10,12 +10,18 @@ use std::{
 use tokio::net::TcpListener;
 
 use axum::{
-    extract::ws::{
-        Message,
-        WebSocket,
-        WebSocketUpgrade
+    extract::{
+        ws::{
+            Message,
+            WebSocket,
+            WebSocketUpgrade
+        },
+        State
     },
-    extract::State,
+    http::{
+        header,
+        Method
+    },
     response::{
         Html,
         IntoResponse
@@ -28,9 +34,15 @@ use axum::{
     Router
 };
 
-use tower_http::services::{
-    ServeDir,
-    ServeFile
+use tower_http::{
+    cors::{
+        AllowOrigin,
+        CorsLayer
+    },
+    services::{
+        ServeDir,
+        ServeFile
+    }
 };
 
 use futures_util::{
@@ -57,6 +69,13 @@ async fn main() {
             }
         });
 
+    let cors_layer: CorsLayer = CorsLayer::new()
+        .allow_origin(AllowOrigin::list([
+            "https://static.matthewjames.xyz".parse().unwrap()
+        ]))
+        .allow_methods([Method::GET])
+        .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION]);
+
     let app: Router = Router::new()
         .route("/websocket", get(ws_handler))
         .with_state(clients)
@@ -69,7 +88,8 @@ async fn main() {
         .route_service("/Projects", ServeFile::new("./static/projects.html"))
         .route_service("/contact", ServeFile::new("./static/contact.html"))
         .route_service("/Contact", ServeFile::new("./static/contact.html"))
-        .fallback_service(serve_dir);
+        .fallback_service(serve_dir)
+        .layer(cors_layer);
 
     let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
         .await
