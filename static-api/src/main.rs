@@ -43,7 +43,8 @@ async fn main() {
 
     let cors_layer: CorsLayer = CorsLayer::new()
         .allow_origin(AllowOrigin::list([
-            "https://static.matthewjames.xyz".parse().unwrap()
+            "https://matthewjames.xyz".parse().unwrap(),
+            "https://projects.matthewjames.xyz".parse().unwrap()
         ]))
         .allow_methods([Method::GET])
         .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION]);
