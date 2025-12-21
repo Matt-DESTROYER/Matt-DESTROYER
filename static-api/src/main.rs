@@ -47,21 +47,28 @@ async fn main() {
             .unwrap()
     );
 
-    let cors_layer: CorsLayer = CorsLayer::new()
-        .allow_methods(Method::GET)
-        .allow_origin(AllowOrigin::predicate(|origin: &HeaderValue, _request_parts| {
-            let origin = origin.to_str().unwrap_or("");
+    let cors_layer: CorsLayer = {
+        let root = format!("://{}", ROOT_DOMAIN);
+        let subdomain = format!(".{}", ROOT_DOMAIN);
+        let port_suffix = format!(".{}:", ROOT_DOMAIN);
+        let port_col = format!("://{}:", ROOT_DOMAIN);
 
-            if origin.ends_with(&format!("://{}", ROOT_DOMAIN)) || origin.ends_with(&format!(".{}", ROOT_DOMAIN)) {
-                return true;
-            }
+        CorsLayer::new()
+            .allow_methods(Method::GET)
+            .allow_origin(AllowOrigin::predicate(move |origin: &HeaderValue, _request_parts| {
+                let origin = origin.to_str().unwrap_or("");
 
-            if origin.contains(&format!(".{}:", ROOT_DOMAIN)) || origin.contains(&format!("://{}:", ROOT_DOMAIN)) {
-                return true;
-            }
+                if origin.ends_with(&root) || origin.ends_with(&subdomain) {
+                    return true;
+                }
 
-            false
-        }));
+                if origin.contains(&port_suffix) || origin.contains(&port_col) {
+                    return true;
+                }
+
+                false
+            }))
+    };
 
     let app = Router::new()
         .fallback_service(ServeDir::new("./static"))
