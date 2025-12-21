@@ -39,6 +39,7 @@ use axum::{
 };
 
 use tower_http::{
+    compression::CompressionLayer,
     cors::{
         AllowOrigin,
         Any,
@@ -56,7 +57,7 @@ use futures_util::{
     SinkExt
 };
 
-use serde_json::Value;
+use serde_json;
 
 type Clients = Arc<Mutex<Vec<tokio::sync::mpsc::UnboundedSender<String>>>>;
 
@@ -92,7 +93,12 @@ async fn main() {
         .layer(middleware::from_fn(move |req, next| {
             custom_404_handler(req, next, not_found_html.clone())
         }))
-        .layer(cors_layer);
+        .layer(cors_layer)
+        .layer(
+            CompressionLayer::new()
+                .br(true)
+                .gzip(true)
+        );
 
     let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
         .await
@@ -149,7 +155,7 @@ async fn handle_socket(socket: WebSocket, clients: Clients) {
 }
 
 async fn handle_server_message(socket: &mut SplitSink<WebSocket, Message>, msg: String/*, clients: &Clients*/) -> bool {
-    if let Ok(json) = serde_json::from_str(&msg) {
+    if let Ok(json) = serde_json::from_str::<serde_json::Value>(&msg) {
         match json["name"].as_str() {
             Some("count") => {
                 if socket.send(Message::Text(msg.into())).await.is_err() {
@@ -178,7 +184,7 @@ async fn handle_client_message(socket: &mut SplitSink<WebSocket, Message>, msg: 
                     }
                 },
                 json_string => {
-                    if let Ok(json) = serde_json::from_str(json_string) {
+                    if let Ok(json) = serde_json::from_str::<serde_json::Value>(json_string) {
                         match json["name"].as_str() {
                             Some("count") => {
                                 if socket.send(Message::Text(count(&clients).into())).await.is_err() {

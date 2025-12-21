@@ -27,6 +27,7 @@ use axum::{
 };
 
 use tower_http::{
+    compression::CompressionLayer,
     cors::{
         AllowOrigin,
         Any,
@@ -56,7 +57,12 @@ async fn main() {
         .layer(middleware::from_fn(move |req, next| {
             custom_404_handler(req, next, not_found_html.clone())
         }))
-        .layer(cors_layer);
+        .layer(cors_layer)
+        .layer(
+            CompressionLayer::new()
+                .br(true)
+                .gzip(true)
+        );
 
     let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
         .await
