@@ -149,15 +149,15 @@ async fn handle_socket(socket: WebSocket, clients: Clients) {
 }
 
 async fn handle_server_message(socket: &mut SplitSink<WebSocket, Message>, msg: String/*, clients: &Clients*/) -> bool {
-    let json: Value = serde_json::from_str(&msg).unwrap();
-
-    match json["name"].as_str() {
-        Some("count") => {
-            if socket.send(Message::Text(msg.into())).await.is_err() {
-                return false;
-            }
-        },
-        _ => {}
+    if let Ok(json) = serde_json::from_str(&msg) {
+        match json["name"].as_str() {
+            Some("count") => {
+                if socket.send(Message::Text(msg.into())).await.is_err() {
+                    return false;
+                }
+            },
+            _ => {}
+        }
     }
 
     return true;
@@ -178,15 +178,15 @@ async fn handle_client_message(socket: &mut SplitSink<WebSocket, Message>, msg: 
                     }
                 },
                 json_string => {
-                    let json: Value = serde_json::from_str(json_string).unwrap();
-
-                    match json["name"].as_str() {
-                        Some("count") => {
-                            if socket.send(Message::Text(count(&clients).into())).await.is_err() {
-                                return false;
-                            }
-                        },
-                        _ => {}
+                    if let Ok(json) = serde_json::from_str(json_string) {
+                        match json["name"].as_str() {
+                            Some("count") => {
+                                if socket.send(Message::Text(count(&clients).into())).await.is_err() {
+                                    return false;
+                                }
+                            },
+                            _ => {}
+                        }
                     }
                 }
             }
