@@ -10,7 +10,10 @@ use std::{
 use tokio::net::TcpListener;
 
 use axum::{
-    body::Body,
+    body::{
+        Body,
+        Bytes
+    },
     extract::{
         ws::{
             Message,
@@ -68,9 +71,9 @@ const ROOT_DOMAIN: &str = "matthewjames.xyz";
 async fn main() {
     let clients: Clients = Arc::new(Mutex::new(Vec::<tokio::sync::mpsc::UnboundedSender<String>>::new()));
 
-    let not_found_html = Arc::new(
-        fs::read_to_string("./static/404.html")
-            .unwrap_or_else(|_| "<h1>404 Not Found</h1>".to_string())
+    let not_found_html = Bytes::from(
+        fs::read("./static/404.html")
+            .unwrap()
     );
 
     let cors_layer: CorsLayer = CorsLayer::new()
@@ -109,11 +112,11 @@ async fn main() {
         .unwrap();
 }
 
-async fn custom_404_handler(req: Request<Body>, next: Next, html: Arc<String>) -> Response {
+async fn custom_404_handler(req: Request<Body>, next: Next, html: Bytes) -> Response {
     let response = next.run(req).await;
 
     if response.status() == StatusCode::NOT_FOUND {
-        return (StatusCode::NOT_FOUND, Html(html.as_str().to_string())).into_response();
+        return (StatusCode::NOT_FOUND, Html(html)).into_response();
     }
 
     response
