@@ -48,6 +48,7 @@ use tower_http::{
         Any,
         CorsLayer
     },
+    normalize_path::NormalizePathLayer,
     services::{
         ServeDir,
         ServeFile
@@ -85,14 +86,11 @@ async fn main() {
         .with_state(clients)
         .route_service("/", ServeFile::new("./static/home.html"))
         .route_service("/home", ServeFile::new("./static/home.html"))
-        .route_service("/Home", ServeFile::new("./static/home.html"))
         .route_service("/about", ServeFile::new("./static/about.html"))
-        .route_service("/About", ServeFile::new("./static/about.html"))
         .route_service("/projects", ServeFile::new("./static/projects.html"))
-        .route_service("/Projects", ServeFile::new("./static/projects.html"))
         .route_service("/contact", ServeFile::new("./static/contact.html"))
-        .route_service("/Contact", ServeFile::new("./static/contact.html"))
         .fallback_service(ServeDir::new("./static"))
+        .layer(NormalizePathLayer::trim_trailing_slash())
         .layer(middleware::from_fn(move |req, next| {
             custom_404_handler(req, next, not_found_html.clone())
         }))
