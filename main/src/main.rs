@@ -20,6 +20,8 @@ use axum::{
         State
     },
     http::{
+        HeaderValue,
+        Method,
         Request,
         StatusCode
     },
@@ -38,6 +40,7 @@ use axum::{
 
 use tower_http::{
     cors::{
+        AllowOrigin,
         Any,
         CorsLayer
     },
@@ -57,7 +60,8 @@ use serde_json::Value;
 
 type Clients = Arc<Mutex<Vec<tokio::sync::mpsc::UnboundedSender<String>>>>;
 
-const PORT: u16 = 3000; // matthewjames.xyz
+const PORT: u16 = 3000;
+const ROOT_DOMAIN: &str = "matthewjames.xyz";
 
 #[tokio::main]
 async fn main() {
@@ -69,11 +73,10 @@ async fn main() {
     );
 
     let cors_layer: CorsLayer = CorsLayer::new()
-        .allow_methods(Any)
+        .allow_methods(Method::GET)
         .allow_origin(Any);
 
     let app: Router = Router::new()
-        .layer(cors_layer)
         .route("/websocket", get(ws_handler))
         .with_state(clients)
         .route_service("/", ServeFile::new("./static/home.html"))
@@ -88,7 +91,8 @@ async fn main() {
         .fallback_service(ServeDir::new("./static"))
         .layer(middleware::from_fn(move |req, next| {
             custom_404_handler(req, next, not_found_html.clone())
-        }));
+        }))
+        .layer(cors_layer);
 
     let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
         .await

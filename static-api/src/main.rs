@@ -9,6 +9,8 @@ use tokio::net::TcpListener;
 use axum::{
     body::Body,
     http::{
+        HeaderValue,
+        Method,
         Request,
         StatusCode
     },
@@ -26,13 +28,14 @@ use axum::{
 
 use tower_http::{
     cors::{
-        Any,
+        AllowOrigin,
         CorsLayer
     },
     services::ServeDir
 };
 
-const PORT: u16 = 3002; // static.matthewjames.xyz
+const PORT: u16 = 3002;
+const ROOT_DOMAIN: &str = "matthewjames.xyz";
 
 #[tokio::main]
 async fn main() {
@@ -42,15 +45,27 @@ async fn main() {
     );
 
     let cors_layer: CorsLayer = CorsLayer::new()
-        .allow_methods(Any)
-        .allow_origin(Any);
+        .allow_methods(Method::GET)
+        .allow_origin(AllowOrigin::predicate(|origin: &HeaderValue, _request_parts| {
+            let origin = origin.to_str().unwrap_or("");
+
+            if origin.ends_with(&format!("://{}", ROOT_DOMAIN)) || origin.ends_with(&format!(".{}", ROOT_DOMAIN)) {
+                return true;
+            }
+
+            if origin.contains(&format!(".{}:", ROOT_DOMAIN)) || origin.contains(&format!("://{}:", ROOT_DOMAIN)) {
+                return true;
+            }
+
+            false
+        }));
 
     let app = Router::new()
-        .layer(cors_layer)
         .fallback_service(ServeDir::new("./static"))
         .layer(middleware::from_fn(move |req, next| {
             custom_404_handler(req, next, not_found_html.clone())
-        }));
+        }))
+        .layer(cors_layer);
 
     let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
         .await

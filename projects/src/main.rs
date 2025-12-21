@@ -9,6 +9,8 @@ use tokio::net::TcpListener;
 use axum::{
     body::Body,
     http::{
+        HeaderValue,
+        Method,
         Request,
         StatusCode
     },
@@ -26,6 +28,7 @@ use axum::{
 
 use tower_http::{
     cors::{
+        AllowOrigin,
         Any,
         CorsLayer
     },
@@ -44,16 +47,16 @@ async fn main() {
             .unwrap_or_else(|_| "<h1>404 Not Found</h1>".to_string())
     );
     let cors_layer: CorsLayer = CorsLayer::new()
-        .allow_methods(Any)
+        .allow_methods(Method::GET)
         .allow_origin(Any);
 
     let app = Router::new()
-        .layer(cors_layer)
         .route_service("/", ServeFile::new("./static/projects.html"))
         .fallback_service(ServeDir::new("./static"))
         .layer(middleware::from_fn(move |req, next| {
             custom_404_handler(req, next, not_found_html.clone())
-        }));
+        }))
+        .layer(cors_layer);
 
     let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
         .await
