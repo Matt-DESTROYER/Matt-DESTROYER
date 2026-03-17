@@ -41,6 +41,23 @@ use tower_http::{
 const PORT: u16 = 3002;
 const ROOT_DOMAIN: &str = "matthewjames.xyz";
 
+/// Starts the HTTP server configured with static file serving, a custom 404 page, CORS rules, path normalization, and response compression.
+///
+/// This binary entrypoint:
+/// - Loads the pre-rendered 404 HTML into memory and uses it for requests that resolve to 404.
+/// - Serves files from the `./static` directory as a fallback for unmatched routes.
+/// - Applies a CORS policy that allows GET requests from origins matching the configured root domain and its subdomains or port-suffixed variants.
+/// - Normalizes request paths by trimming trailing slashes and applies a middleware that substitutes 404 responses with the loaded HTML.
+/// - Enables brotli and gzip compression for responses and binds the server to 0.0.0.0 on the configured `PORT`.
+///
+/// # Examples
+///
+/// ```ignore
+/// // Run the server (binds to 0.0.0.0:PORT)
+/// fn main() {
+///     // cargo run --bin your_binary_name
+/// }
+/// ```
 #[tokio::main]
 async fn main() {
     let not_found_html = Bytes::from(
@@ -93,6 +110,29 @@ async fn main() {
         .unwrap();
 }
 
+/// Replaces a 404 response with a provided HTML body while passing through non-404 responses unchanged.
+///
+/// If the downstream service returns `StatusCode::NOT_FOUND`, this middleware returns a response
+/// with status 404 and the given HTML bytes as the body; otherwise it returns the downstream response.
+///
+/// # Parameters
+/// - `html`: Preloaded HTML content used as the body when a 404 response is produced.
+///
+/// # Returns
+/// A `Response` containing either the original downstream response or a 404 response whose body is `html`.
+///
+/// # Examples
+/// ```rust,no_run
+/// use axum::{Router, body::Bytes, middleware};
+///
+/// // assume `custom_404_handler` is in scope and `not_found_html` is Bytes
+/// let not_found_html = Bytes::from_static(b"<h1>Not Found</h1>");
+/// let app = Router::new()
+///     .route_layer(middleware::from_fn_with_state(
+///         not_found_html.clone(),
+///         |req, next, html| async move { custom_404_handler(req, next, html).await },
+///     ));
+/// ```
 async fn custom_404_handler(req: Request<Body>, next: Next, html: Bytes) -> Response {
     let response = next.run(req).await;
 
