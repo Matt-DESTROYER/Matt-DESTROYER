@@ -1,5 +1,5 @@
 Hi, I'm Matt!
-I'm a 19 year old student at The University of Melbourne.
+I'm a 20 year old student, studying at The University of Melbourne.
 I have experience with JavaScript, Python and C, and I've messed around with PHP, WAT and more.
 
 [![Most Used Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=Matt-DESTROYER&theme=gruvbox_light)](https://github.com/Matt-DESTROYER)
