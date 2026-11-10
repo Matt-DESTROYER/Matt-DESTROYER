@@ -8,7 +8,7 @@ use axum::{
     http::{HeaderMap, header},
 };
 use rand::rngs::OsRng;
-use sqlx::Row;
+use sqlx::{Pool, Row, Sqlite};
 
 use std::net::{IpAddr, SocketAddr};
 
@@ -34,6 +34,16 @@ fn get_client_ip(headers: &HeaderMap) -> Option<IpAddr> {
 }
 */
 
+fn log_attempt_and_prune(db: &Pool<Sqlite>, username: &String, ip: &String, success: bool) {
+        let db_clone = db.clone();
+        let username = username.clone();
+        let ip = ip.clone();
+        tokio::spawn(async move {
+            log_attempt(&db_clone, username, ip, success).await;
+            prune_old_logs(&db_clone).await;
+        });
+}
+
 pub async fn register(
     State(state): State<AppState>,
     Json(payload): Json<RegisterRequest>,
@@ -42,8 +52,8 @@ pub async fn register(
         return Json(RegisterResponse {
             success: false,
             message: "Username too short".into(),
-            session_id: None
-        })
+            session_id: None,
+        });
     }
     if payload.password.len() < 8 {
         return Json(RegisterResponse {
@@ -117,16 +127,11 @@ pub async fn login(
     {
         Some(row) => row,
         None => {
-            let db_clone = state.db.clone();
-            let username = payload.username.clone();
-            let ip = ip.clone();
-            tokio::spawn(async move {
-                log_attempt(&db_clone, username, ip, false).await;
-            });
+            log_attempt_and_prune(&state.db, &payload.username, &ip, false);
 
             return Json(LoginResponse {
                 success: false,
-                message: "User not found".into(),
+                message: "Invalid username or password".into(),
                 session_id: None,
             });
         }
@@ -138,12 +143,9 @@ pub async fn login(
     let parsed_hash = match PasswordHash::new(&stored_hash) {
         Ok(hash) => hash,
         Err(_) => {
-            let db_clone = state.db.clone();
-            let username = payload.username.clone();
-            let ip = ip.clone();
-            tokio::spawn(async move {
-                log_attempt(&db_clone, username, ip, false).await;
-            });
+            // should we log if it's a server error?
+            // maybe it's caused by a malformed user request?
+            log_attempt_and_prune(&state.db, &payload.username, &ip, false);
 
             return Json(LoginResponse {
                 success: false,
@@ -158,23 +160,16 @@ pub async fn login(
         .is_ok();
 
     if !is_valid {
+        log_attempt_and_prune(&state.db, &payload.username, &ip, false);
+
         return Json(LoginResponse {
             success: false,
-            message: "Incorrect password".into(),
+            message: "Invalid username or password".into(),
             session_id: None,
         });
     }
-
-    {
-        let db_clone = state.db.clone();
-        let username = payload.username.clone();
-        let ip = ip.clone();
-        tokio::spawn(async move {
-            log_attempt(&db_clone, username, ip, false).await;
-            prune_old_logs(&db_clone).await;
-            prune_sessions(&db_clone).await;
-        });
-    }
+    
+    log_attempt_and_prune(&state.db, &payload.username, &ip, true);
 
     let token = create_session(&state.db, user_id).await;
 
@@ -202,8 +197,6 @@ pub async fn session(
     };
 
     tokio::spawn(async move {
-        //log_attempt(&state.db, username, ip, valid_session).await;
-        prune_old_logs(&state.db).await;
         prune_sessions(&state.db).await;
     });
 

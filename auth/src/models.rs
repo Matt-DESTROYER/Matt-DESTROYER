@@ -50,7 +50,7 @@ pub struct LoginResponse {
 #[derive(Deserialize)]
 pub struct VerifySessionRequest {
     pub token: String,
-    pub user_id: i64
+    pub user_id: i64,
 }
 
 #[derive(Serialize)]

@@ -1,4 +1,8 @@
-use rand::{Rng, distributions::Alphanumeric};
+use argon2::{
+    Argon2,
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+};
+use rand::{Rng, distributions::Alphanumeric, rngs::OsRng};
 use sqlx::{
     Row, SqlitePool,
     sqlite::{SqliteConnectOptions, SqlitePoolOptions},
@@ -103,6 +107,16 @@ pub async fn create_session(db: &SqlitePool, user_id: i64) -> Option<String> {
         }
     };
 
+    // TODO: consider hashing tokens and storing the hash
+    // ISSUE: how to retrieve hash from db (if salt is used)
+    /*
+    let salt = SaltString::generate(&mut OsRng);
+    let hashed_token = match Argon2::default().hash_password(token.as_bytes(), &salt) {
+        Ok(hashed_pw) => hashed_pw.to_string(),
+        Err(_) => return None
+    };
+    */
+
     match sqlx::query(
         "INSERT INTO sessions (session_token, user_id, expires_at) VALUES ($1, $2, $3)",
     )
@@ -145,7 +159,7 @@ pub async fn verify_session(db: &SqlitePool, token: String, user_id: i64) -> Opt
 
     if session_expiry < now {
         prune_sessions(db).await;
-        return None
+        return None;
     }
 
     // user should know their ID, randomly finding a session is not enough
