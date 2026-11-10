@@ -35,30 +35,57 @@ fn get_client_ip(headers: &HeaderMap) -> Option<IpAddr> {
 */
 
 fn log_attempt_and_prune(db: &Pool<Sqlite>, username: &String, ip: &String, success: bool) {
-        let db_clone = db.clone();
-        let username = username.clone();
-        let ip = ip.clone();
-        tokio::spawn(async move {
-            log_attempt(&db_clone, username, ip, success).await;
-            prune_old_logs(&db_clone).await;
-        });
+    let db_clone = db.clone();
+    let username = username.clone();
+    let ip = ip.clone();
+    tokio::spawn(async move {
+        log_attempt(&db_clone, username, ip, success).await;
+        prune_old_logs(&db_clone).await;
+    });
 }
 
 pub async fn register(
     State(state): State<AppState>,
     Json(payload): Json<RegisterRequest>,
 ) -> Json<RegisterResponse> {
+    if payload.username.trim() != payload.username {
+        return Json(RegisterResponse {
+            success: false,
+            message: "Username has leading or trailing whitespace".into(),
+            session_id: None,
+        });
+    } else if payload.password.trim() != payload.password {
+        return Json(RegisterResponse {
+            success: false,
+            message: "Password has leading or trailing whitespace".into(),
+            session_id: None,
+        });
+    }
+
     if payload.username.len() < 3 {
         return Json(RegisterResponse {
             success: false,
             message: "Username too short".into(),
             session_id: None,
         });
+    } else if payload.username.len() > 50 {
+        return Json(RegisterResponse {
+            success: false,
+            message: "Username too long".into(),
+            session_id: None,
+        });
     }
+
     if payload.password.len() < 8 {
         return Json(RegisterResponse {
             success: false,
             message: "Password too short".into(),
+            session_id: None,
+        });
+    } else if payload.password.len() > 100 {
+        return Json(RegisterResponse {
+            success: false,
+            message: "Password too long".into(),
             session_id: None,
         });
     }
@@ -168,7 +195,7 @@ pub async fn login(
             session_id: None,
         });
     }
-    
+
     log_attempt_and_prune(&state.db, &payload.username, &ip, true);
 
     let token = create_session(&state.db, user_id).await;
