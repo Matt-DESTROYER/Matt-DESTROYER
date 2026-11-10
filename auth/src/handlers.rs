@@ -23,6 +23,7 @@ fn get_client_ip_raw(headers: &HeaderMap) -> Option<&str> {
     Some(headers.get("CF-Connecting-IP")?.to_str().ok()?)
 }
 
+/*
 fn get_client_ip(headers: &HeaderMap) -> Option<IpAddr> {
     headers
         .get("CF-Connecting-IP")?
@@ -31,11 +32,27 @@ fn get_client_ip(headers: &HeaderMap) -> Option<IpAddr> {
         .parse::<IpAddr>()
         .ok()
 }
+*/
 
 pub async fn register(
     State(state): State<AppState>,
     Json(payload): Json<RegisterRequest>,
 ) -> Json<RegisterResponse> {
+    if payload.username.len() < 3 {
+        return Json(RegisterResponse {
+            success: false,
+            message: "Username too short".into(),
+            session_id: None
+        })
+    }
+    if payload.password.len() < 8 {
+        return Json(RegisterResponse {
+            success: false,
+            message: "Password too short".into(),
+            session_id: None,
+        });
+    }
+
     let salt = SaltString::generate(&mut OsRng);
     let hashed_pw = match Argon2::default().hash_password(payload.password.as_bytes(), &salt) {
         Ok(hashed_pw) => hashed_pw.to_string(),
@@ -92,13 +109,12 @@ pub async fn login(
         }
     };
 
-    let row = sqlx::query("SELECT id, password_hash FROM users WHERE username = $1")
+    let user = match sqlx::query("SELECT id, password_hash FROM users WHERE username = $1")
         .bind(&payload.username)
         .fetch_optional(&state.db)
         .await
-        .unwrap_or(None);
-
-    let user = match row {
+        .unwrap_or(None)
+    {
         Some(row) => row,
         None => {
             let db_clone = state.db.clone();
@@ -147,13 +163,6 @@ pub async fn login(
             message: "Incorrect password".into(),
             session_id: None,
         });
-    } else {
-        let db_clone = state.db.clone();
-        let username = payload.username.clone();
-        let ip = ip.clone();
-        tokio::spawn(async move {
-            log_attempt(&db_clone, username, ip, false).await;
-        });
     }
 
     {
@@ -187,7 +196,7 @@ pub async fn session(
         None => return Json(VerifySessionResponse { success: false }),
     };
 
-    let valid_session = match verify_session(&state.db, payload.token).await {
+    let valid_session = match verify_session(&state.db, payload.token, payload.user_id).await {
         Some(_) => true,
         None => false,
     };

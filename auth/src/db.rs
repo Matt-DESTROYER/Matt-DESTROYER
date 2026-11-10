@@ -3,13 +3,27 @@ use sqlx::{
     Row, SqlitePool,
     sqlite::{SqliteConnectOptions, SqlitePoolOptions},
 };
-use std::{str::FromStr, time::SystemTime};
+use std::{
+    str::FromStr,
+    time::{SystemTime, SystemTimeError},
+};
 
 use crate::models::{self, AppState};
 
 const DATABASE: &str = "sqlite://database.db";
-const SESSION_VALID_TIME: i64 = 7 * 24 * 60 * 60;
-const TIME_TILL_LOG_CLEAR: i64 = 30 * 24 * 60 * 60;
+
+const SESSION_VALID_TIME: i64 = 7 /* d */ * 24 /* h */ * 60 /* m */ * 60 /* s */; // 7 days
+const TIME_TILL_LOG_CLEAR: i64 = 30 /* d */ * 24 /* h */ * 60 /* m */ * 60 /* s */; // 30 days (~a month)
+
+const MAX_ATTEMPTS: i64 = 3;
+const MAX_ATTEMPT_PERIOD: i64 = 2 /* m */ * 60 /* s */; // 2 minutes
+
+pub fn get_current_time() -> Result<i64, SystemTimeError> {
+    match SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
+        Ok(time) => Ok(time.as_secs() as i64),
+        Err(err) => Err(err),
+    }
+}
 
 pub async fn initialise_db() -> Option<models::AppState> {
     let connection_options = match SqliteConnectOptions::from_str(DATABASE) {
@@ -73,14 +87,15 @@ pub async fn initialise_db() -> Option<models::AppState> {
 }
 
 pub async fn create_session(db: &SqlitePool, user_id: i64) -> Option<String> {
+    // TODO: review how secure a randomly generated 32 character string is, consider UUID or something
     let token: String = rand::thread_rng()
         .sample_iter(&Alphanumeric)
         .take(32)
         .map(char::from)
         .collect();
 
-    let expires_at = match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
-        Ok(time) => time.as_secs() as i64 + SESSION_VALID_TIME,
+    let expires_at = match get_current_time() {
+        Ok(time) => time + SESSION_VALID_TIME,
         Err(error) => {
             eprint!("Error: could not get timestamp");
             eprint!("{}", error);
@@ -108,30 +123,33 @@ pub async fn create_session(db: &SqlitePool, user_id: i64) -> Option<String> {
     Some(token)
 }
 
-pub async fn verify_session(db: &SqlitePool, token: String) -> Option<i64> {
-    let row = match sqlx::query("SELECT user_id, expires_at FROM sessions WHERE session_token = $1")
-        .bind(&token)
-        .fetch_optional(db)
-        .await
-        .unwrap_or(None)
-    {
-        Some(token) => token,
-        None => return None,
-    };
+pub async fn verify_session(db: &SqlitePool, token: String, user_id: i64) -> Option<i64> {
+    let session =
+        match sqlx::query("SELECT user_id, expires_at FROM sessions WHERE session_token = $1")
+            .bind(&token)
+            .fetch_optional(db)
+            .await
+            .unwrap_or(None)
+        {
+            Some(session) => session,
+            None => return None,
+        };
 
-    let expires_at: i64 = row.get("expires_at");
-    let user_id: i64 = row.get("user_id");
+    let session_expiry: i64 = session.get("expires_at");
+    let session_user_id: i64 = session.get("user_id");
 
-    let now = match SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
-        Ok(time) => time.as_secs() as i64,
+    let now = match get_current_time() {
+        Ok(time) => time,
         Err(_) => return None,
     };
 
-    if expires_at < now {
-        let _ = sqlx::query("DELETE FROM sessions WHERE session_token = $1")
-            .bind(&token)
-            .execute(db)
-            .await;
+    if session_expiry < now {
+        prune_sessions(db).await;
+        return None
+    }
+
+    // user should know their ID, randomly finding a session is not enough
+    if user_id != session_user_id {
         return None;
     }
 
@@ -139,8 +157,8 @@ pub async fn verify_session(db: &SqlitePool, token: String) -> Option<i64> {
 }
 
 pub async fn prune_sessions(db: &SqlitePool) {
-    let now = match SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
-        Ok(time) => time.as_secs() as i64,
+    let now = match get_current_time() {
+        Ok(time) => time,
         Err(_) => return,
     };
 
@@ -151,8 +169,8 @@ pub async fn prune_sessions(db: &SqlitePool) {
 }
 
 pub async fn log_attempt(db: &SqlitePool, username: String, ip: String, success: bool) {
-    let now = match SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
-        Ok(time) => time.as_secs() as i64,
+    let now = match get_current_time() {
+        Ok(time) => time,
         Err(_) => return,
     };
 
@@ -165,9 +183,11 @@ pub async fn log_attempt(db: &SqlitePool, username: String, ip: String, success:
         .await;
 }
 
+pub fn check_too_many_attempts() {}
+
 pub async fn prune_old_logs(db: &SqlitePool) {
-    let retention_limit = match SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
-        Ok(time) => time.as_secs() as i64 - TIME_TILL_LOG_CLEAR,
+    let retention_limit = match get_current_time() {
+        Ok(time) => time - TIME_TILL_LOG_CLEAR,
         Err(_) => return,
     };
 
