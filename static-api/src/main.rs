@@ -1,41 +1,20 @@
-use std::{
-    fs,
-    net::SocketAddr
-};
+use std::{fs, net::SocketAddr};
 
 use tokio::net::TcpListener;
 
 use axum::{
-    body::{
-        Body,
-        Bytes
-    },
-    http::{
-        HeaderValue,
-        Method,
-        Request,
-        StatusCode
-    },
-    middleware::{
-        self,
-        Next
-    },
-    response::{
-        Html,
-        IntoResponse,
-        Response
-    },
-    Router
+    Router,
+    body::{Body, Bytes},
+    http::{HeaderValue, Method, Request, StatusCode},
+    middleware::{self, Next},
+    response::{Html, IntoResponse, Response},
 };
 
 use tower_http::{
     compression::CompressionLayer,
-    cors::{
-        AllowOrigin,
-        CorsLayer
-    },
+    cors::{AllowOrigin, CorsLayer},
     normalize_path::NormalizePathLayer,
-    services::ServeDir
+    services::ServeDir,
 };
 
 const PORT: u16 = 3002;
@@ -60,10 +39,7 @@ const ROOT_DOMAIN: &str = "matthewjames.xyz";
 /// ```
 #[tokio::main]
 async fn main() {
-    let not_found_html = Bytes::from(
-        fs::read("./static/404.html")
-            .unwrap()
-    );
+    let not_found_html = Bytes::from(fs::read("./static/404.html").unwrap());
 
     let cors_layer: CorsLayer = {
         let root = format!("://{}", ROOT_DOMAIN);
@@ -73,19 +49,21 @@ async fn main() {
 
         CorsLayer::new()
             .allow_methods(Method::GET)
-            .allow_origin(AllowOrigin::predicate(move |origin: &HeaderValue, _request_parts| {
-                let origin = origin.to_str().unwrap_or("");
+            .allow_origin(AllowOrigin::predicate(
+                move |origin: &HeaderValue, _request_parts| {
+                    let origin = origin.to_str().unwrap_or("");
 
-                if origin.ends_with(&root) || origin.ends_with(&subdomain) {
-                    return true;
-                }
+                    if origin.ends_with(&root) || origin.ends_with(&subdomain) {
+                        return true;
+                    }
 
-                if origin.contains(&port_suffix) || origin.contains(&port_col) {
-                    return true;
-                }
+                    if origin.contains(&port_suffix) || origin.contains(&port_col) {
+                        return true;
+                    }
 
-                false
-            }))
+                    false
+                },
+            ))
     };
 
     let app = Router::new()
@@ -95,19 +73,14 @@ async fn main() {
             custom_404_handler(req, next, not_found_html.clone())
         }))
         .layer(cors_layer)
-        .layer(
-            CompressionLayer::new()
-                .br(true)
-                .gzip(true)
-        );
+        .layer(CompressionLayer::new().br(true).gzip(true));
 
-    let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
-        .await
-        .unwrap();
+    let listener: TcpListener =
+        tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], PORT)))
+            .await
+            .unwrap();
 
-    axum::serve(listener, app)
-        .await
-        .unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
 
 /// Replaces a 404 response with a provided HTML body while passing through non-404 responses unchanged.

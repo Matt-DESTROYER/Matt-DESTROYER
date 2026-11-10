@@ -1,65 +1,33 @@
 use std::{
     fs,
     net::SocketAddr,
-    sync::{
-        Arc,
-        Mutex
-    }
+    sync::{Arc, Mutex},
 };
 
 use tokio::net::TcpListener;
 use tower::Layer;
 
 use axum::{
-    body::{
-        Body,
-        Bytes
-    },
+    Router, ServiceExt,
+    body::{Body, Bytes},
     extract::{
-        ws::{
-            Message,
-            WebSocket,
-            WebSocketUpgrade
-        },
-        State
+        State,
+        ws::{Message, WebSocket, WebSocketUpgrade},
     },
-    http::{
-        Method,
-        Request,
-        StatusCode
-    },
-    middleware::{
-        self,
-        Next
-    },
-    response::{
-        Html,
-        IntoResponse,
-        Response
-    },
+    http::{Method, Request, StatusCode},
+    middleware::{self, Next},
+    response::{Html, IntoResponse, Response},
     routing::get,
-    Router,
-    ServiceExt
 };
 
 use tower_http::{
     compression::CompressionLayer,
-    cors::{
-        Any,
-        CorsLayer
-    },
+    cors::{Any, CorsLayer},
     normalize_path::NormalizePathLayer,
-    services::{
-        ServeDir,
-        ServeFile
-    }
+    services::{ServeDir, ServeFile},
 };
 
-use futures_util::{
-    stream::SplitSink,
-    StreamExt,
-    SinkExt
-};
+use futures_util::{SinkExt, StreamExt, stream::SplitSink};
 
 use serde_json;
 
@@ -83,12 +51,11 @@ const ROOT_DOMAIN: &str = "matthewjames.xyz";
 /// ```
 #[tokio::main]
 async fn main() {
-    let clients: Clients = Arc::new(Mutex::new(Vec::<tokio::sync::mpsc::UnboundedSender<String>>::new()));
+    let clients: Clients = Arc::new(Mutex::new(
+        Vec::<tokio::sync::mpsc::UnboundedSender<String>>::new(),
+    ));
 
-    let not_found_html = Bytes::from(
-        fs::read("./static/404.html")
-            .unwrap()
-    );
+    let not_found_html = Bytes::from(fs::read("./static/404.html").unwrap());
 
     let cors_layer: CorsLayer = CorsLayer::new()
         .allow_methods(Method::GET)
@@ -107,24 +74,21 @@ async fn main() {
             custom_404_handler(req, next, not_found_html.clone())
         }))
         .layer(cors_layer)
-        .layer(
-            CompressionLayer::new()
-                .br(true)
-                .gzip(true)
-        );
+        .layer(CompressionLayer::new().br(true).gzip(true));
 
     let app = NormalizePathLayer::trim_trailing_slash().layer(router);
 
-    let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
-        .await
-        .unwrap();
+    let listener: TcpListener =
+        tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], PORT)))
+            .await
+            .unwrap();
 
     axum::serve(
         listener,
-        ServiceExt::<Request<Body>>::into_make_service(app)
+        ServiceExt::<Request<Body>>::into_make_service(app),
     )
-        .await
-        .unwrap();
+    .await
+    .unwrap();
 }
 
 /// Replaces any 404 response produced by downstream handlers with the provided HTML body.
@@ -236,7 +200,10 @@ async fn handle_socket(socket: WebSocket, clients: Clients) {
         }
     }
 
-    clients.lock().unwrap().retain(|client| !client.same_channel(&sender));
+    clients
+        .lock()
+        .unwrap()
+        .retain(|client| !client.same_channel(&sender));
 
     broadcast(count(&clients), &clients);
 }
@@ -265,14 +232,17 @@ async fn handle_socket(socket: WebSocket, clients: Clients) {
 /// assert!(keep_open);
 /// # }
 /// ```
-async fn handle_server_message(socket: &mut SplitSink<WebSocket, Message>, msg: String/*, clients: &Clients*/) -> bool {
+async fn handle_server_message(
+    socket: &mut SplitSink<WebSocket, Message>,
+    msg: String, /*, clients: &Clients*/
+) -> bool {
     if let Ok(json) = serde_json::from_str::<serde_json::Value>(&msg) {
         match json["name"].as_str() {
             Some("count") => {
                 if socket.send(Message::Text(msg.into())).await.is_err() {
                     return false;
                 }
-            },
+            }
             _ => {}
         }
     }
@@ -304,37 +274,47 @@ async fn handle_server_message(socket: &mut SplitSink<WebSocket, Message>, msg: 
 /// assert!(keep_alive);
 /// # }
 /// ```
-async fn handle_client_message(socket: &mut SplitSink<WebSocket, Message>, msg: Message, clients: &Clients) -> bool {
+async fn handle_client_message(
+    socket: &mut SplitSink<WebSocket, Message>,
+    msg: Message,
+    clients: &Clients,
+) -> bool {
     match msg {
-        Message::Text(text) => {
-            match text.as_str() {
-                "ping" => {
-                    if socket.send(Message::Text("pong".into())).await.is_err() {
-                        return false;
-                    }
-                },
-                "heartbeat" => {
-                    if socket.send(Message::Text("heartbeat".into())).await.is_err() {
-                        return false;
-                    }
-                },
-                json_string => {
-                    if let Ok(json) = serde_json::from_str::<serde_json::Value>(json_string) {
-                        match json["name"].as_str() {
-                            Some("count") => {
-                                if socket.send(Message::Text(count(&clients).into())).await.is_err() {
-                                    return false;
-                                }
-                            },
-                            _ => {}
+        Message::Text(text) => match text.as_str() {
+            "ping" => {
+                if socket.send(Message::Text("pong".into())).await.is_err() {
+                    return false;
+                }
+            }
+            "heartbeat" => {
+                if socket
+                    .send(Message::Text("heartbeat".into()))
+                    .await
+                    .is_err()
+                {
+                    return false;
+                }
+            }
+            json_string => {
+                if let Ok(json) = serde_json::from_str::<serde_json::Value>(json_string) {
+                    match json["name"].as_str() {
+                        Some("count") => {
+                            if socket
+                                .send(Message::Text(count(&clients).into()))
+                                .await
+                                .is_err()
+                            {
+                                return false;
+                            }
                         }
+                        _ => {}
                     }
                 }
             }
         },
         Message::Close(_) => {
             return false;
-        },
+        }
         _ => {}
     }
 
@@ -350,4 +330,3 @@ fn broadcast(msg: String, clients: &Clients) {
     let mut clients = clients.lock().unwrap();
     clients.retain(|client| client.send(msg.clone()).is_ok());
 }
-

@@ -1,79 +1,77 @@
-use axum::{
-    extract::{
-        ConnectInfo,
-        State
-    },
-    http::HeaderMap,
-    Json,
-};
 use argon2::{
-    password_hash::{
-        PasswordHasher,
-        SaltString,
-        PasswordVerifier,
-        PasswordHash
-    },
-    Argon2
+    Argon2,
+    password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+};
+use axum::{
+    Json,
+    extract::{ConnectInfo, State},
+    http::{HeaderMap, header},
 };
 use rand::rngs::OsRng;
 use sqlx::Row;
 
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
 
 use crate::models::{
-	AppState,
-	RegisterRequest,
-	RegisterResponse,
-	LoginRequest,
-	LoginResponse,
-	VerifySessionRequest,
-	VerifySessionResponse
+    AppState, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, VerifySessionRequest,
+    VerifySessionResponse,
 };
 
-use crate::db::{
-	create_session,
-	prune_sessions,
-	verify_session,
-	log_attempt,
-	prune_old_logs
-};
+use crate::db::{create_session, log_attempt, prune_old_logs, prune_sessions, verify_session};
+
+fn get_client_ip_raw(headers: &HeaderMap) -> Option<&str> {
+    Some(headers.get("CF-Connecting-IP")?.to_str().ok()?)
+}
+
+fn get_client_ip(headers: &HeaderMap) -> Option<IpAddr> {
+    headers
+        .get("CF-Connecting-IP")?
+        .to_str()
+        .ok()?
+        .parse::<IpAddr>()
+        .ok()
+}
 
 pub async fn register(
     State(state): State<AppState>,
-    Json(payload): Json<RegisterRequest>
+    Json(payload): Json<RegisterRequest>,
 ) -> Json<RegisterResponse> {
     let salt = SaltString::generate(&mut OsRng);
-    let hashed_pw = match Argon2::default()
-            .hash_password(payload.password.as_bytes(), &salt) {
+    let hashed_pw = match Argon2::default().hash_password(payload.password.as_bytes(), &salt) {
         Ok(hashed_pw) => hashed_pw.to_string(),
-        Err(_) => return Json(RegisterResponse {
-            success: false,
-            message: "Failed to hash password".into(),
-            session_id: None
-        })
+        Err(_) => {
+            return Json(RegisterResponse {
+                success: false,
+                message: "Failed to hash password".into(),
+                session_id: None,
+            });
+        }
     };
 
-    let insert_result = sqlx::query("INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id")
-        .bind(&payload.username)
-        .bind(&hashed_pw)
-        .fetch_one(&state.db)
-        .await;
+    let insert_result =
+        sqlx::query("INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id")
+            .bind(&payload.username)
+            .bind(&hashed_pw)
+            .fetch_one(&state.db)
+            .await;
 
     let user_id: i64 = match insert_result {
         Ok(row) => row.get("id"),
-        Err(_) => return Json(RegisterResponse {
-            success: false,
-            message: "Username taken".into(),
-            session_id: None
-        })
+        Err(_) => {
+            return Json(RegisterResponse {
+                success: false,
+                message: "Username taken".into(),
+                session_id: None,
+            });
+        }
     };
 
-    let token = create_session(&state.db, user_id).await;
+    let token: Option<String> = create_session(&state.db, user_id).await;
 
     Json(RegisterResponse {
         success: true,
         message: "Registered successfully!".into(),
-        session_id: token
+        session_id: token,
     })
 }
 
@@ -81,13 +79,18 @@ pub async fn login(
     State(state): State<AppState>,
     headers: HeaderMap,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
-    Json(payload): Json<LoginRequest>
+    Json(payload): Json<LoginRequest>,
 ) -> Json<LoginResponse> {
-    let ip = headers
-        .get("CF-Connecting-IP")
-        .and_then(|h| h.to_str().ok())
-        .unwrap_or(addr.ip().to_string().as_str())
-        .to_string();
+    let ip = match get_client_ip_raw(&headers) {
+        Some(ip) => ip.to_owned(),
+        None => {
+            return Json(LoginResponse {
+                success: false,
+                message: "Failed to obtain IP".into(),
+                session_id: None,
+            });
+        }
+    };
 
     let row = sqlx::query("SELECT id, password_hash FROM users WHERE username = $1")
         .bind(&payload.username)
@@ -100,7 +103,7 @@ pub async fn login(
         None => {
             let db_clone = state.db.clone();
             let username = payload.username.clone();
-			let ip = ip.clone();
+            let ip = ip.clone();
             tokio::spawn(async move {
                 log_attempt(&db_clone, username, ip, false).await;
             });
@@ -108,8 +111,8 @@ pub async fn login(
             return Json(LoginResponse {
                 success: false,
                 message: "User not found".into(),
-                session_id: None
-            })
+                session_id: None,
+            });
         }
     };
 
@@ -121,7 +124,7 @@ pub async fn login(
         Err(_) => {
             let db_clone = state.db.clone();
             let username = payload.username.clone();
-			let ip = ip.clone();
+            let ip = ip.clone();
             tokio::spawn(async move {
                 log_attempt(&db_clone, username, ip, false).await;
             });
@@ -129,8 +132,8 @@ pub async fn login(
             return Json(LoginResponse {
                 success: false,
                 message: "Failed to parse saved password hash".into(),
-                session_id: None
-            })
+                session_id: None,
+            });
         }
     };
 
@@ -142,12 +145,12 @@ pub async fn login(
         return Json(LoginResponse {
             success: false,
             message: "Incorrect password".into(),
-            session_id: None
+            session_id: None,
         });
-    } else  {
+    } else {
         let db_clone = state.db.clone();
         let username = payload.username.clone();
-		let ip = ip.clone();
+        let ip = ip.clone();
         tokio::spawn(async move {
             log_attempt(&db_clone, username, ip, false).await;
         });
@@ -156,7 +159,7 @@ pub async fn login(
     {
         let db_clone = state.db.clone();
         let username = payload.username.clone();
-		let ip = ip.clone();
+        let ip = ip.clone();
         tokio::spawn(async move {
             log_attempt(&db_clone, username, ip, false).await;
             prune_old_logs(&db_clone).await;
@@ -169,7 +172,7 @@ pub async fn login(
     Json(LoginResponse {
         success: true,
         message: "Logged in successfully".into(),
-        session_id: token
+        session_id: token,
     })
 }
 
@@ -177,27 +180,25 @@ pub async fn session(
     State(state): State<AppState>,
     headers: HeaderMap,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
-    Json(payload): Json<VerifySessionRequest>
+    Json(payload): Json<VerifySessionRequest>,
 ) -> Json<VerifySessionResponse> {
-	let ip = headers
-        .get("CF-Connecting-IP")
-        .and_then(|h| h.to_str().ok())
-        .unwrap_or(addr.ip().to_string().as_str())
-        .to_string();
+    let ip = match get_client_ip_raw(&headers) {
+        Some(ip) => ip.to_owned(),
+        None => return Json(VerifySessionResponse { success: false }),
+    };
 
-	let valid_session = match verify_session(&state.db, payload.token).await {
-		Some(_) => true,
-		None => false
-	};
+    let valid_session = match verify_session(&state.db, payload.token).await {
+        Some(_) => true,
+        None => false,
+    };
 
-	tokio::spawn(async move {
-		//log_attempt(&state.db, username, ip, valid_session).await;
-		prune_old_logs(&state.db).await;
-		prune_sessions(&state.db).await;
-	});
+    tokio::spawn(async move {
+        //log_attempt(&state.db, username, ip, valid_session).await;
+        prune_old_logs(&state.db).await;
+        prune_sessions(&state.db).await;
+    });
 
-	Json(VerifySessionResponse {
-		success: valid_session
-	})
+    Json(VerifySessionResponse {
+        success: valid_session,
+    })
 }
-

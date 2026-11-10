@@ -1,18 +1,19 @@
 use axum::{
+    Router, ServiceExt,
+    body::Body,
+    http::{HeaderValue, Method, Request, header::CONTENT_TYPE},
     routing::post,
-    Router
 };
 use tokio::net::TcpListener;
-use tower_http::{
-    compression::CompressionLayer,
-    normalize_path::NormalizePathLayer
-};
+use tower::Layer;
+
+use tower_http::{cors::CorsLayer, normalize_path::NormalizePathLayer};
 
 use std::net::SocketAddr;
 
-mod models;
 mod db;
 mod handlers;
+mod models;
 
 const PORT: u16 = 3005;
 
@@ -22,32 +23,34 @@ async fn main() {
         Some(state) => state,
         None => {
             eprintln!("An error occurred initialising the app's state...");
-            return
+            std::process::exit(1);
         }
     };
 
-    let app = Router::new()
+    let cors_layer = CorsLayer::new()
+        .allow_origin("https://matthewjames.xyz".parse::<HeaderValue>().unwrap())
+        .allow_methods([Method::POST])
+        .allow_headers([CONTENT_TYPE])
+        .allow_credentials(true);
+
+    let router = Router::new()
         .route("/login", post(handlers::login))
         .route("/register", post(handlers::register))
         .route("/session", post(handlers::session))
         .with_state(state)
-        .layer(NormalizePathLayer::trim_trailing_slash())
-        .layer(
-            CompressionLayer::new()
-                .br(true)
-                .gzip(true)
-        );
+        .layer(cors_layer);
 
-    let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
-        .await
-        .unwrap();
+    let app = NormalizePathLayer::trim_trailing_slash().layer(router);
+
+    let listener: TcpListener =
+        tokio::net::TcpListener::bind(SocketAddr::from(([127, 0, 0, 1], PORT)))
+            .await
+            .unwrap();
 
     axum::serve(
         listener,
-        app
-            .into_make_service_with_connect_info::<SocketAddr>()
+        ServiceExt::<Request<Body>>::into_make_service_with_connect_info::<SocketAddr>(app),
     )
-        .await
-        .unwrap();
+    .await
+    .unwrap();
 }
-
