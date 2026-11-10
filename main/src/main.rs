@@ -8,6 +8,7 @@ use std::{
 };
 
 use tokio::net::TcpListener;
+use tower::Layer;
 
 use axum::{
     body::{
@@ -23,7 +24,6 @@ use axum::{
         State
     },
     http::{
-        HeaderValue,
         Method,
         Request,
         StatusCode
@@ -38,13 +38,13 @@ use axum::{
         Response
     },
     routing::get,
-    Router
+    Router,
+    ServiceExt
 };
 
 use tower_http::{
     compression::CompressionLayer,
     cors::{
-        AllowOrigin,
         Any,
         CorsLayer
     },
@@ -94,7 +94,7 @@ async fn main() {
         .allow_methods(Method::GET)
         .allow_origin(Any);
 
-    let app: Router = Router::new()
+    let router: Router = Router::new()
         .route("/websocket", get(ws_handler))
         .with_state(clients)
         .route_service("/", ServeFile::new("./static/home.html"))
@@ -103,7 +103,6 @@ async fn main() {
         .route_service("/projects", ServeFile::new("./static/projects.html"))
         .route_service("/contact", ServeFile::new("./static/contact.html"))
         .fallback_service(ServeDir::new("./static"))
-        .layer(NormalizePathLayer::trim_trailing_slash())
         .layer(middleware::from_fn(move |req, next| {
             custom_404_handler(req, next, not_found_html.clone())
         }))
@@ -114,11 +113,16 @@ async fn main() {
                 .gzip(true)
         );
 
+    let app = NormalizePathLayer::trim_trailing_slash().layer(router);
+
     let listener: TcpListener = tokio::net::TcpListener::bind(SocketAddr::from(([0, 0, 0, 0], PORT)))
         .await
         .unwrap();
 
-    axum::serve(listener, app)
+    axum::serve(
+        listener,
+        ServiceExt::<Request<Body>>::into_make_service(app)
+    )
         .await
         .unwrap();
 }
